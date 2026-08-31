@@ -16,7 +16,8 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        ScrollView(.vertical) {
+            VStack(alignment: .leading, spacing: 22) {
             HStack(spacing: 14) {
                 Image(systemName: "gearshape.fill")
                     .font(.system(size: 24, weight: .semibold))
@@ -136,10 +137,13 @@ struct SettingsView: View {
                     }
                 }
             }
-            Spacer(minLength: 0)
+                Spacer(minLength: 0)
+            }
+            .padding(28)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(28)
         .frame(width: 570, height: 610, alignment: .topLeading)
+        .scrollIndicators(.visible)
         .background(AppCanvasBackground())
         .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
         .animation(AppMotion.theme, value: appearanceMode)
