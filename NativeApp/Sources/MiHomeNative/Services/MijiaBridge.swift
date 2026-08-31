@@ -60,6 +60,10 @@ enum MijiaBridge {
         try decode(run("login-status"))
     }
 
+    static func logout() throws {
+        _ = try run("logout")
+    }
+
     static func beginQRCodeLogin() throws -> QRLoginSession {
         try decode(run("qr-login-begin"))
     }

@@ -113,6 +113,17 @@ class MijiaService:
         except Exception as exc:
             raise _wrap_error(exc, "扫码登录未完成") from exc
 
+    def logout(self) -> None:
+        """仅移除本机保存的米家凭据，不会退出手机上的米家 App。"""
+        auth_path = self._api.auth_data_path
+        try:
+            auth_path.unlink(missing_ok=True)
+        except OSError as exc:
+            raise _wrap_error(exc, "移除本机登录凭据失败") from exc
+        self._api = self._init_api()
+        self._device_cache.clear()
+        self._device_index.clear()
+
     # ---------- 设备列表 ----------
 
     def list_devices(self) -> list[DeviceInfo]:

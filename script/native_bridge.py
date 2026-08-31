@@ -56,6 +56,7 @@ def main() -> None:
     scene.add_argument("--home-id", required=True)
 
     subcommands.add_parser("login-status")
+    subcommands.add_parser("logout")
     subcommands.add_parser("qr-login-begin")
     qr_wait = subcommands.add_parser("qr-login-wait")
     qr_wait.add_argument("--payload", required=True)
@@ -65,6 +66,9 @@ def main() -> None:
     service = MijiaService()
     if args.command == "login-status":
         result = {"available": service.login_status()}
+    elif args.command == "logout":
+        service.logout()
+        result = {"ok": True}
     elif args.command == "qr-login-begin":
         login_data = service.qr_login_begin()
         result = {

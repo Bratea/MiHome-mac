@@ -16,7 +16,7 @@ struct MiHomeNativeApp: App {
 
     var body: some Scene {
         WindowGroup(id: "main") {
-            ContentView(store: store)
+            MiHomeRootView(store: store)
                 .frame(minWidth: 880, minHeight: 580)
                 .preferredColorScheme(preferredScheme)
                 .tint(tint)

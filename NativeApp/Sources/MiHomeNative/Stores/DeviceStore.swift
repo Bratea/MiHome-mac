@@ -23,6 +23,7 @@ final class DeviceStore {
     private(set) var isAuthenticating = false
     private(set) var accountAvailable = false
     private(set) var qrLoginURL: String?
+    private(set) var isCheckingAccount = true
 
     var onlineCount: Int { devices.filter(\.online).count }
     var homes: [String] {
@@ -92,6 +93,12 @@ final class DeviceStore {
         }
     }
 
+    func initializeAccount() async {
+        isCheckingAccount = true
+        await refreshAccountStatus()
+        isCheckingAccount = false
+    }
+
     func syncFromCloud() async {
         guard !isSyncing else { return }
         isSyncing = true
@@ -116,12 +123,14 @@ final class DeviceStore {
             let session = try await Task.detached { try MijiaBridge.beginQRCodeLogin() }.value
             guard session.requiresScan, let loginURL = session.loginURL, let payload = session.payload else {
                 accountAvailable = true
+                await syncFromCloud()
                 reportSuccess(title: "米家账户已连接", message: "本地凭据仍然有效")
                 return
             }
             qrLoginURL = loginURL
             try await Task.detached { try MijiaBridge.completeQRCodeLogin(payload: payload) }.value
             accountAvailable = true
+            await syncFromCloud()
             reportSuccess(title: "扫码登录成功", message: "账户凭据已安全保存在本机")
         } catch {
             reportFailure(title: "扫码登录失败", message: error.localizedDescription)
@@ -130,6 +139,30 @@ final class DeviceStore {
 
     func clearQRCodeLogin() {
         qrLoginURL = nil
+    }
+
+    func logout() async {
+        guard !isAuthenticating else { return }
+        isAuthenticating = true
+        defer { isAuthenticating = false }
+        do {
+            try await Task.detached { try MijiaBridge.logout() }.value
+            try DeviceCacheService.clear()
+            devices = []
+            powerStates = [:]
+            metrics = [:]
+            controlDetails = [:]
+            propertyValues = [:]
+            energyStatistics = [:]
+            smartScenes = []
+            accountAvailable = false
+            qrLoginURL = nil
+            lastLoadedAt = nil
+            lastError = nil
+            reportSuccess(title: "已退出登录", message: "本机米家凭据和设备缓存已移除")
+        } catch {
+            reportFailure(title: "退出登录失败", message: error.localizedDescription)
+        }
     }
 
     func loadControls(for device: Device) async {

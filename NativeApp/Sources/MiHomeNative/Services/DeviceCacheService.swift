@@ -17,4 +17,9 @@ enum DeviceCacheService {
         let data = try JSONEncoder().encode(cache)
         try data.write(to: cacheURL, options: .atomic)
     }
+
+    static func clear() throws {
+        guard FileManager.default.fileExists(atPath: cacheURL.path) else { return }
+        try FileManager.default.removeItem(at: cacheURL)
+    }
 }

@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
     @Environment(\.colorScheme) private var colorScheme
     @State private var showingQRCodeLogin = false
+    @State private var showingLogoutConfirmation = false
 
     private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
     private var customColor: Binding<Color> {
@@ -129,16 +130,25 @@ struct SettingsView: View {
                     }
                     Spacer(minLength: 12)
                     VStack(alignment: .trailing, spacing: 8) {
-                        Button("扫码登录") { showingQRCodeLogin = true }
+                        if store.accountAvailable {
+                            Button {
+                                Task { await store.syncFromCloud() }
+                            } label: {
+                                if store.isSyncing { ProgressView().controlSize(.small) }
+                                else { Text("同步设备") }
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(store.isSyncing)
+
+                            Button("退出登录", role: .destructive) {
+                                showingLogoutConfirmation = true
+                            }
                             .buttonStyle(.bordered)
-                        Button {
-                            Task { await store.syncFromCloud() }
-                        } label: {
-                            if store.isSyncing { ProgressView().controlSize(.small) }
-                            else { Text("同步设备") }
+                            .disabled(store.isAuthenticating)
+                        } else {
+                            Button("扫码登录") { showingQRCodeLogin = true }
+                                .buttonStyle(.borderedProminent)
                         }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!store.accountAvailable || store.isSyncing)
                     }
                 }
             }
@@ -189,6 +199,14 @@ struct SettingsView: View {
         .task { await store.refreshAccountStatus() }
         .sheet(isPresented: $showingQRCodeLogin) {
             QRCodeLoginSheet(store: store)
+        }
+        .alert("退出米家登录？", isPresented: $showingLogoutConfirmation) {
+            Button("取消", role: .cancel) { }
+            Button("退出登录", role: .destructive) {
+                Task { await store.logout() }
+            }
+        } message: {
+            Text("这会删除这台 Mac 上的米家登录凭据和设备缓存，不影响手机米家 App。")
         }
     }
 }

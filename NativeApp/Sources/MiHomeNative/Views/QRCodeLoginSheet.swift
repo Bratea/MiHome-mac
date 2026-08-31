@@ -5,6 +5,7 @@ import SwiftUI
 
 struct QRCodeLoginSheet: View {
     let store: DeviceStore
+    var allowsDismiss = true
     @Environment(\.dismiss) private var dismiss
     @State private var hasStarted = false
 
@@ -48,9 +49,11 @@ struct QRCodeLoginSheet: View {
             .animation(AppMotion.layout, value: store.isAuthenticating)
 
             HStack {
-                Button("取消") {
-                    store.clearQRCodeLogin()
-                    dismiss()
+                if allowsDismiss {
+                    Button("取消") {
+                        store.clearQRCodeLogin()
+                        dismiss()
+                    }
                 }
                 Spacer()
                 if store.accountAvailable && !store.isAuthenticating {
