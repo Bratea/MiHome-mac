@@ -57,7 +57,6 @@ struct DeviceDetailView: View {
             .padding(.vertical, 14)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppCanvasBackground())
         .task(id: device.did) { await store.loadControls(for: device) }
     }
 

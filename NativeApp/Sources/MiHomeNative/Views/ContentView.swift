@@ -28,6 +28,8 @@ struct ContentView: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .background(.clear)
             .navigationTitle("米家")
             .safeAreaInset(edge: .bottom) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -85,6 +87,8 @@ struct ContentView: View {
             }
             .animation(.snappy(duration: 0.24), value: selectedDevice?.did)
         }
+        .background(AppCanvasBackground())
+        .background(WindowTransparencyConfigurator().allowsHitTesting(false))
         .onChange(of: selectedHome) { _, _ in selectedRoom = "全部房间" }
         .overlay(alignment: .topTrailing) {
             if let notification = store.notification {
@@ -136,7 +140,6 @@ struct ContentView: View {
                 }
                 .padding(28)
             }
-            .background(AppCanvasBackground())
             .contentShape(Rectangle())
             .onTapGesture {
                 if selectedDevice != nil {

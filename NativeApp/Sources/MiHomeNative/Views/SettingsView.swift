@@ -138,6 +138,7 @@ struct SettingsView: View {
         .padding(28)
         .frame(width: 570, height: 610, alignment: .topLeading)
         .background(AppCanvasBackground())
+        .background(WindowTransparencyConfigurator().allowsHitTesting(false))
     }
 }
 
