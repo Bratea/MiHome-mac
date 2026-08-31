@@ -111,7 +111,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     header
                     roomPicker
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 235, maximum: 330), spacing: 16)], spacing: 16) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 240, maximum: 300), spacing: 16)], spacing: 16) {
                         ForEach(filteredDevices) { device in
                             Button {
                                 selectedDevice = device
@@ -136,6 +136,12 @@ struct ContentView: View {
                 .padding(28)
             }
             .background(.background)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if selectedDevice != nil {
+                    selectedDevice = nil
+                }
+            }
             .navigationTitle(selectedHome == "全部家庭" ? "全部设备" : selectedHome)
             .toolbar { toolbarContent }
         }

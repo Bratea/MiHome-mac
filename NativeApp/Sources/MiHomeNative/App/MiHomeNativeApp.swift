@@ -8,9 +8,9 @@ struct MiHomeNativeApp: App {
     var body: some Scene {
         WindowGroup(id: "main") {
             ContentView(store: store)
-                .frame(minWidth: 1_050, minHeight: 580)
+                .frame(minWidth: 880, minHeight: 580)
         }
-        .defaultSize(width: 1_280, height: 760)
+        .defaultSize(width: 1_100, height: 720)
         .commands {
             CommandGroup(after: .appInfo) {
                 Button("重新载入设备缓存") { store.loadCache() }
