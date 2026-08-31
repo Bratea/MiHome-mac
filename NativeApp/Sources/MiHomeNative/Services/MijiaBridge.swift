@@ -41,6 +41,21 @@ enum MijiaBridge {
         }
     }
 
+    static func statistics(did: String, key: String, dataType: String, limit: Int, days: Int) throws -> EnergyStatistics {
+        try decode(run(
+            "statistics", "--did", did, "--key", key,
+            "--data-type", dataType, "--limit", "\(limit)", "--days", "\(days)"
+        ))
+    }
+
+    static func scenes() throws -> [SmartScene] {
+        try decode(run("scenes"))
+    }
+
+    static func runScene(id: String, homeID: String) throws {
+        _ = try run("run-scene", "--scene-id", id, "--home-id", homeID)
+    }
+
     private static func run(_ arguments: String...) throws -> Data {
         guard let command = bridgeCommand() else { throw MijiaBridgeError.unavailable }
         let process = Process()

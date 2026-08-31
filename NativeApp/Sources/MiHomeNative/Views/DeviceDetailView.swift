@@ -99,6 +99,15 @@ struct DeviceDetailView: View {
 
     @ViewBuilder
     private func controls(for detail: DeviceControlDetail) -> some View {
+        if device.model == "lumi.acpartner.mcn02" {
+            ACPartnerControlView(device: device, detail: detail, store: store)
+        } else {
+            genericControls(for: detail)
+        }
+    }
+
+    @ViewBuilder
+    private func genericControls(for detail: DeviceControlDetail) -> some View {
         let switches = detail.props.filter { $0.writable && $0.type == "bool" }
         let selectors = detail.props.filter { $0.writable && !($0.type == "bool") && !($0.valueList ?? []).isEmpty }
         let sliders = detail.props.filter {

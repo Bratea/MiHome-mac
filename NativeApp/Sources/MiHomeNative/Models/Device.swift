@@ -97,6 +97,29 @@ struct DeviceAction: Codable, Identifiable, Hashable, Sendable {
     var id: String { name }
 }
 
+struct EnergyStatistics: Codable, Sendable {
+    let entries: [EnergyStatistic]
+}
+
+struct EnergyStatistic: Codable, Identifiable, Hashable, Sendable {
+    let timestamp: Int
+    let value: Double?
+
+    var id: Int { timestamp }
+    var kilowattHours: Double? { value.map { $0 / 1_000 } }
+}
+
+struct SmartScene: Codable, Identifiable, Hashable, Sendable {
+    let id: String
+    let name: String
+    let homeID: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case homeID = "home_id"
+    }
+}
+
 enum JSONValue: Codable, Hashable, Sendable {
     case string(String)
     case number(Double)

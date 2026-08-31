@@ -249,6 +249,33 @@ class MijiaService:
         except Exception as exc:
             raise _wrap_error(exc, f"执行动作 {name} 失败") from exc
 
+    def get_statistics(self, did: str, key: str, data_type: str, limit: int, time_start: int, time_end: int) -> list[dict]:
+        """获取设备历史统计数据，供原生端展示耗电等真实设备指标。"""
+        try:
+            return self._api.get_statistics({
+                "did": did,
+                "key": key,
+                "data_type": data_type,
+                "limit": limit,
+                "time_start": time_start,
+                "time_end": time_end,
+            })
+        except Exception as exc:
+            raise _wrap_error(exc, "读取设备统计信息失败") from exc
+
+    def list_scenes(self) -> list[dict]:
+        """读取所有家庭中由用户创建的手动智能场景。"""
+        try:
+            return self._api.get_scenes_list()
+        except Exception as exc:
+            raise _wrap_error(exc, "读取智能场景失败") from exc
+
+    def run_scene(self, scene_id: str, home_id: str) -> bool:
+        try:
+            return bool(self._api.run_scene(scene_id, home_id))
+        except Exception as exc:
+            raise _wrap_error(exc, "执行智能场景失败") from exc
+
     def _get_device(self, did: str) -> mijiaDevice:
         # 构造 mijiaDevice 本身要发两次网络请求（设备列表 + spec 拉取），
         # 按 did 缓存实例，面板切换时才不会反复打接口

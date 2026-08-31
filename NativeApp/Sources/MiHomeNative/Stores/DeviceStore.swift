@@ -16,6 +16,9 @@ final class DeviceStore {
     private(set) var pendingCommands: Set<String> = []
     private(set) var activityLogs: [ActivityLog] = []
     private(set) var notification: AppNotification?
+    private(set) var energyStatistics: [String: (daily: EnergyStatistics, monthly: EnergyStatistics)] = [:]
+    private(set) var smartScenes: [SmartScene] = []
+    private(set) var isLoadingExtras: Set<String> = []
 
     var onlineCount: Int { devices.filter(\.online).count }
     var homes: [String] {
@@ -65,6 +68,8 @@ final class DeviceStore {
     func controlError(for did: String) -> String? { controlErrors[did] }
     func isLoadingControl(for did: String) -> Bool { loadingControls.contains(did) }
     func isCommandPending(_ key: String) -> Bool { pendingCommands.contains(key) }
+    func energy(for did: String) -> (daily: EnergyStatistics, monthly: EnergyStatistics)? { energyStatistics[did] }
+    func isLoadingExtras(for did: String) -> Bool { isLoadingExtras.contains(did) }
 
     func clearActivityLogs() {
         activityLogs.removeAll()
@@ -89,6 +94,9 @@ final class DeviceStore {
                 propertyValues[device.did] = try await Task.detached {
                     try MijiaBridge.readProperties(did: device.did, names: readableNames)
                 }.value
+            }
+            if device.model == "lumi.acpartner.mcn02" {
+                await loadACPartnerExtras(for: device)
             }
         } catch {
             controlErrors[device.did] = error.localizedDescription
@@ -125,6 +133,43 @@ final class DeviceStore {
         } catch {
             controlErrors[did] = error.localizedDescription
             reportFailure(title: "执行动作失败", message: error.localizedDescription)
+        }
+    }
+
+    func loadACPartnerExtras(for device: Device) async {
+        guard !isLoadingExtras.contains(device.did) else { return }
+        isLoadingExtras.insert(device.did)
+        defer { isLoadingExtras.remove(device.did) }
+
+        do {
+            async let daily = Task.detached {
+                try MijiaBridge.statistics(did: device.did, key: "powerCost", dataType: "stat_day", limit: 7, days: 8)
+            }.value
+            async let monthly = Task.detached {
+                try MijiaBridge.statistics(did: device.did, key: "powerCost", dataType: "stat_month", limit: 6, days: 190)
+            }.value
+            energyStatistics[device.did] = try await (daily: daily, monthly: monthly)
+        } catch {
+            reportFailure(title: "读取用电信息失败", message: error.localizedDescription)
+        }
+
+        do {
+            smartScenes = try await Task.detached { try MijiaBridge.scenes() }.value
+        } catch {
+            reportFailure(title: "读取智能场景失败", message: error.localizedDescription)
+        }
+    }
+
+    func runScene(_ scene: SmartScene) async {
+        let key = "scene:\(scene.id)"
+        guard !pendingCommands.contains(key) else { return }
+        pendingCommands.insert(key)
+        defer { pendingCommands.remove(key) }
+        do {
+            try await Task.detached { try MijiaBridge.runScene(id: scene.id, homeID: scene.homeID) }.value
+            reportSuccess(title: "场景已执行", message: scene.name)
+        } catch {
+            reportFailure(title: "执行场景失败", message: error.localizedDescription)
         }
     }
 

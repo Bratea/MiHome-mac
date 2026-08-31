@@ -11,6 +11,7 @@ import argparse
 import json
 import signal
 import sys
+import time
 from dataclasses import asdict
 from typing import Any
 
@@ -42,6 +43,18 @@ def main() -> None:
     action.add_argument("--name", required=True)
     action.add_argument("--params")
 
+    statistics = subcommands.add_parser("statistics")
+    statistics.add_argument("--did", required=True)
+    statistics.add_argument("--key", required=True)
+    statistics.add_argument("--data-type", required=True)
+    statistics.add_argument("--limit", type=int, default=6)
+    statistics.add_argument("--days", type=int, default=31)
+
+    subcommands.add_parser("scenes")
+    scene = subcommands.add_parser("run-scene")
+    scene.add_argument("--scene-id", required=True)
+    scene.add_argument("--home-id", required=True)
+
     args = parser.parse_args()
     service = MijiaService()
     if args.command == "detail":
@@ -51,6 +64,28 @@ def main() -> None:
     elif args.command == "write-prop":
         service.write_prop(args.did, args.name, _json_argument(args.value))
         result = {"ok": True}
+    elif args.command == "statistics":
+        now = int(time.time())
+        raw_entries = service.get_statistics(
+            args.did, args.key, args.data_type, args.limit,
+            now - args.days * 24 * 3600, now,
+        )
+        entries = []
+        for item in raw_entries:
+            try:
+                values = json.loads(item.get("value", "[]"))
+                value = float(values[0]) if values else None
+            except (TypeError, ValueError, json.JSONDecodeError, IndexError):
+                value = None
+            entries.append({"timestamp": int(item.get("time", 0)), "value": value})
+        result = {"entries": entries}
+    elif args.command == "scenes":
+        result = [
+            {"id": str(scene["scene_id"]), "name": scene.get("name", "未命名场景"), "home_id": str(scene["home_id"])}
+            for scene in service.list_scenes()
+        ]
+    elif args.command == "run-scene":
+        result = {"ok": service.run_scene(args.scene_id, args.home_id)}
     else:
         service.run_action(args.did, args.name, _json_argument(args.params))
         result = {"ok": True}
