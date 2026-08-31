@@ -15,6 +15,7 @@ struct ACPartnerControlView: View {
     private var mode: DeviceProperty? { property("mode") }
     private var fanLevel: DeviceProperty? { property("fan-level") }
     private var verticalSwing: DeviceProperty? { property("vertical-swing") }
+    private var isPowerOn: Bool { store.propertyValue(for: device.did, name: "on")?.boolValue ?? false }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -29,10 +30,10 @@ struct ACPartnerControlView: View {
 
     private var temperatureHero: some View {
         VStack(spacing: 5) {
-            Text(temperatureText)
-                .font(.system(size: 48, weight: .medium, design: .rounded))
+            Text(isPowerOn ? temperatureText : "已关闭")
+                .font(.system(size: isPowerOn ? 48 : 34, weight: .medium, design: .rounded))
                 .monospacedDigit()
-            Text(selectedOptionLabel(for: mode) ?? "空调")
+            Text(isPowerOn ? (selectedOptionLabel(for: mode) ?? "空调") : "设定温度 \(temperatureText) · \(selectedOptionLabel(for: mode) ?? "自动")")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
         }
@@ -111,6 +112,8 @@ struct ACPartnerControlView: View {
                             .disabled(!canAdjustTemperature(by: range[2]))
                         }
                     }
+                    .opacity(isPowerOn ? 1 : 0.45)
+                    .disabled(!isPowerOn)
                 }
 
                 if verticalSwing != nil {
@@ -118,8 +121,9 @@ struct ACPartnerControlView: View {
                         Toggle("", isOn: booleanBinding(for: verticalSwing))
                             .labelsHidden()
                             .toggleStyle(.switch)
-                            .disabled(!device.online)
+                            .disabled(!device.online || !isPowerOn)
                     }
+                    .opacity(isPowerOn ? 1 : 0.45)
                 }
             }
         }

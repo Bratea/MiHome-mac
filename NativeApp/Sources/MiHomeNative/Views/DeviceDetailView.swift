@@ -14,6 +14,7 @@ struct DeviceDetailView: View {
     private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     private var detail: DeviceControlDetail? { store.controlDetail(for: device.did) }
+    private var powerState: Bool? { store.propertyValue(for: device.did, name: "on")?.boolValue ?? store.powerState(for: device) }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -69,9 +70,15 @@ struct DeviceDetailView: View {
                 Text(device.name).font(.title3.weight(.semibold))
                 Text(device.roomName == "未知" ? device.homeName : "\(device.homeName) · \(device.roomName)")
                     .foregroundStyle(.secondary)
-                Label(device.online ? "在线" : "离线", systemImage: "circle.fill")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(device.online ? .green : .secondary)
+                HStack(spacing: 5) {
+                    Label(device.online ? "在线" : "离线", systemImage: "circle.fill")
+                    if device.online, let powerState {
+                        Text("·")
+                        Text(powerState ? "已开启" : "已关闭")
+                    }
+                }
+                .font(.caption.weight(.medium))
+                .foregroundStyle(device.online ? .green : .secondary)
             }
             Spacer()
             VStack(spacing: 6) {
