@@ -3,6 +3,11 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("showOfflineDevices") private var showOfflineDevices = true
     @AppStorage("automaticRefresh") private var automaticRefresh = true
+    @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -11,13 +16,53 @@ struct SettingsView: View {
                     .font(.system(size: 24, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 52, height: 52)
-                    .background(Color.accentColor.gradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .background(tint.gradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                 VStack(alignment: .leading, spacing: 3) {
                     Text("设置")
                         .font(.title2.weight(.bold))
                     Text("调整米家在这台 Mac 上的显示方式")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                }
+            }
+
+            SettingsCard("外观") {
+                VStack(alignment: .leading, spacing: 14) {
+                    Picker("显示模式", selection: $appearanceMode) {
+                        ForEach(AppAppearance.allCases) { appearance in
+                            Text(appearance.title).tag(appearance.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+
+                    Text("主题色")
+                        .font(.subheadline.weight(.medium))
+                    HStack(spacing: 12) {
+                        ForEach(AppThemeColor.allCases) { theme in
+                            Button {
+                                themeColor = theme.rawValue
+                            } label: {
+                                VStack(spacing: 6) {
+                                    Circle()
+                                        .fill(theme.color)
+                                        .frame(width: 28, height: 28)
+                                        .overlay {
+                                            if themeColor == theme.rawValue {
+                                                Image(systemName: "checkmark")
+                                                    .font(.caption.weight(.bold))
+                                                    .foregroundStyle(.white)
+                                            }
+                                        }
+                                    Text(theme.title)
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .frame(width: 50)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("主题色：\(theme.title)")
+                        }
+                    }
                 }
             }
 
@@ -58,11 +103,12 @@ struct SettingsView: View {
         }
         .padding(28)
         .frame(width: 540, height: 490, alignment: .topLeading)
-        .background(.background)
+        .background(AppThemeColor.canvas(for: colorScheme))
     }
 }
 
 private struct SettingsCard<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     private let content: Content
 
@@ -78,7 +124,7 @@ private struct SettingsCard<Content: View>: View {
             content
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppThemeColor.card(for: colorScheme), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
     }
 }

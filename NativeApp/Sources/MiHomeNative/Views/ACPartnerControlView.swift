@@ -6,6 +6,9 @@ struct ACPartnerControlView: View {
     let device: Device
     let detail: DeviceControlDetail
     @Bindable var store: DeviceStore
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     private var targetTemperature: DeviceProperty? { property("target-temperature") }
     private var mode: DeviceProperty? { property("mode") }
@@ -146,7 +149,7 @@ struct ACPartnerControlView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 Image(systemName: "sparkles")
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(tint)
                                 Text(scene.name)
                                     .lineLimit(1)
                                 Spacer()
@@ -214,10 +217,10 @@ struct ACPartnerControlView: View {
                         .lineLimit(1)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
-                        .background(selected ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .background(selected ? tint.opacity(0.15) : Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(selected ? Color.accentColor : .primary)
+                .foregroundStyle(selected ? tint : .primary)
                 .disabled(!device.online)
             }
         }

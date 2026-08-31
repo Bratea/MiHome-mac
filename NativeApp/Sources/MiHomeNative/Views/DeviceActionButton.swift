@@ -7,6 +7,9 @@ struct DeviceActionButton: View {
     let perform: () -> Void
 
     @State private var showingConfirmation = false
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     var body: some View {
         Button {
@@ -20,7 +23,7 @@ struct DeviceActionButton: View {
                 Image(systemName: action.systemImage)
                     .font(.body.weight(.semibold))
                     .frame(width: 20)
-                    .foregroundStyle(isDisabled ? .secondary : Color.accentColor)
+                    .foregroundStyle(isDisabled ? .secondary : tint)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(action.localizedTitle)
                         .font(.body.weight(.medium))

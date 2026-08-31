@@ -3,13 +3,16 @@ import SwiftUI
 
 struct DeviceInformationPopover: View {
     let device: Device
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
             HStack(spacing: 12) {
                 Image(systemName: device.systemImage)
                     .font(.title2.weight(.medium))
-                    .foregroundStyle(device.online ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(device.online ? tint : Color.secondary)
                     .frame(width: 44, height: 44)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                 VStack(alignment: .leading, spacing: 3) {

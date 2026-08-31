@@ -5,22 +5,26 @@ struct DeviceCardView: View {
     let powerState: Bool?
     let metric: String?
     @State private var isHovered = false
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .top) {
                 Image(systemName: device.systemImage)
                     .font(.system(size: 22, weight: .medium))
-                    .foregroundStyle(device.online ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(device.online ? tint : Color.secondary)
                     .frame(width: 46, height: 46)
-                    .background(device.online ? Color.accentColor.opacity(0.10) : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .background(device.online ? tint.opacity(0.10) : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 
                 Spacer(minLength: 12)
 
                 if let powerState {
                     Image(systemName: powerState ? "power.circle.fill" : "power.circle")
                         .font(.title3)
-                        .foregroundStyle(powerState ? Color.accentColor : .secondary)
+                        .foregroundStyle(powerState ? tint : .secondary)
                         .accessibilityLabel(powerState ? "当前已打开" : "当前已关闭")
                 }
             }
@@ -50,10 +54,10 @@ struct DeviceCardView: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, minHeight: 158, maxHeight: 176, alignment: .topLeading)
-        .background(isHovered ? .thinMaterial : .regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(AppThemeColor.card(for: colorScheme), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(isHovered ? Color.accentColor.opacity(0.36) : Color.secondary.opacity(0.16), lineWidth: isHovered ? 1 : 0.5)
+                .strokeBorder(isHovered ? tint.opacity(0.45) : Color.secondary.opacity(0.16), lineWidth: isHovered ? 1 : 0.5)
         }
         .shadow(color: isHovered ? Color.black.opacity(0.12) : .clear, radius: 12, y: 5)
         .scaleEffect(isHovered ? 1.01 : 1)

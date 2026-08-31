@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Bindable var store: DeviceStore
+    @Environment(\.colorScheme) private var colorScheme
     @AppStorage("showOfflineDevices") private var showOfflineDevices = true
     @State private var selectedHome = "全部家庭"
     @State private var selectedRoom = "全部房间"
@@ -135,7 +136,7 @@ struct ContentView: View {
                 }
                 .padding(28)
             }
-            .background(.background)
+            .background(AppThemeColor.canvas(for: colorScheme))
             .contentShape(Rectangle())
             .onTapGesture {
                 if selectedDevice != nil {

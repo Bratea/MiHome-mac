@@ -9,6 +9,10 @@ struct DeviceDetailView: View {
     @State private var actionText = ""
     @State private var sliderDrafts: [String: Double] = [:]
     @State private var showingDeviceInformation = false
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     private var detail: DeviceControlDetail? { store.controlDetail(for: device.did) }
 
@@ -52,6 +56,7 @@ struct DeviceDetailView: View {
             .padding(.vertical, 14)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppThemeColor.canvas(for: colorScheme))
         .task(id: device.did) { await store.loadControls(for: device) }
     }
 
@@ -59,9 +64,9 @@ struct DeviceDetailView: View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: device.systemImage)
                 .font(.system(size: 26, weight: .medium))
-                .foregroundStyle(device.online ? Color.accentColor : Color.secondary)
+                .foregroundStyle(device.online ? tint : Color.secondary)
                 .frame(width: 50, height: 50)
-                .background(device.online ? Color.accentColor.opacity(0.10) : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(device.online ? tint.opacity(0.10) : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             VStack(alignment: .leading, spacing: 4) {
                 Text(device.name).font(.title3.weight(.semibold))
                 Text(device.roomName == "未知" ? device.homeName : "\(device.homeName) · \(device.roomName)")

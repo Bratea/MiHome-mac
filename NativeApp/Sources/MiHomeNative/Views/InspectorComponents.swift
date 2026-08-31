@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct InspectorSection<Content: View>: View {
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     private let content: Content
 
@@ -16,7 +17,7 @@ struct InspectorSection<Content: View>: View {
             content
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .background(AppThemeColor.card(for: colorScheme), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         }
     }
 }

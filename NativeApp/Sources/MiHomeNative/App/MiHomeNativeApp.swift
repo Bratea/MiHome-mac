@@ -4,11 +4,21 @@ import SwiftUI
 @main
 struct MiHomeNativeApp: App {
     @State private var store = DeviceStore()
+    @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
+    @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+
+    private var preferredScheme: ColorScheme? {
+        AppAppearance(rawValue: appearanceMode)?.colorScheme
+    }
+
+    private var tint: Color { AppThemeColor.color(for: themeColor) }
 
     var body: some Scene {
         WindowGroup(id: "main") {
             ContentView(store: store)
                 .frame(minWidth: 880, minHeight: 580)
+                .preferredColorScheme(preferredScheme)
+                .tint(tint)
         }
         .defaultSize(width: 1_100, height: 720)
         .commands {
@@ -20,6 +30,7 @@ struct MiHomeNativeApp: App {
 
         MenuBarExtra {
             MenuBarView(store: store)
+                .tint(tint)
         }
         label: {
             Image(systemName: store.onlineCount > 0 ? "house.fill" : "house")
@@ -30,6 +41,8 @@ struct MiHomeNativeApp: App {
 
         Settings {
             SettingsView()
+                .preferredColorScheme(preferredScheme)
+                .tint(tint)
         }
     }
 }
