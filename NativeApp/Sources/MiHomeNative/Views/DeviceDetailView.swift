@@ -10,9 +10,10 @@ struct DeviceDetailView: View {
     @State private var sliderDrafts: [String: Double] = [:]
     @State private var showingDeviceInformation = false
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
     @Environment(\.colorScheme) private var colorScheme
 
-    private var tint: Color { AppThemeColor.color(for: themeColor) }
+    private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     private var detail: DeviceControlDetail? { store.controlDetail(for: device.did) }
 

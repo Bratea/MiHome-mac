@@ -8,8 +8,9 @@ struct DeviceActionButton: View {
 
     @State private var showingConfirmation = false
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
 
-    private var tint: Color { AppThemeColor.color(for: themeColor) }
+    private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     var body: some View {
         Button {

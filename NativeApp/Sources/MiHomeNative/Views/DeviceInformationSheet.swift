@@ -4,8 +4,9 @@ import SwiftUI
 struct DeviceInformationPopover: View {
     let device: Device
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
 
-    private var tint: Color { AppThemeColor.color(for: themeColor) }
+    private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {

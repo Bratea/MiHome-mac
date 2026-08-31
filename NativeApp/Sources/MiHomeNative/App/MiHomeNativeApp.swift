@@ -6,12 +6,13 @@ struct MiHomeNativeApp: App {
     @State private var store = DeviceStore()
     @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
 
     private var preferredScheme: ColorScheme? {
         AppAppearance(rawValue: appearanceMode)?.colorScheme
     }
 
-    private var tint: Color { AppThemeColor.color(for: themeColor) }
+    private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     var body: some Scene {
         WindowGroup(id: "main") {

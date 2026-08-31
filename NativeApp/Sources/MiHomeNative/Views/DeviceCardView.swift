@@ -6,9 +6,8 @@ struct DeviceCardView: View {
     let metric: String?
     @State private var isHovered = false
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
-    @Environment(\.colorScheme) private var colorScheme
-
-    private var tint: Color { AppThemeColor.color(for: themeColor) }
+    @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
+    private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -54,7 +53,7 @@ struct DeviceCardView: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, minHeight: 158, maxHeight: 176, alignment: .topLeading)
-        .background(AppThemeColor.card(for: colorScheme), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .appCardSurface(cornerRadius: 18)
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .strokeBorder(isHovered ? tint.opacity(0.45) : Color.secondary.opacity(0.16), lineWidth: isHovered ? 1 : 0.5)

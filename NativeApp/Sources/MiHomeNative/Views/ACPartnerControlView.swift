@@ -7,8 +7,9 @@ struct ACPartnerControlView: View {
     let detail: DeviceControlDetail
     @Bindable var store: DeviceStore
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
+    @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
 
-    private var tint: Color { AppThemeColor.color(for: themeColor) }
+    private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
 
     private var targetTemperature: DeviceProperty? { property("target-temperature") }
     private var mode: DeviceProperty? { property("mode") }
