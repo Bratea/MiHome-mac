@@ -17,7 +17,7 @@ struct DeviceDetailView: View {
             header
             Divider()
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 22) {
                     if store.isLoadingControl(for: device.did), detail == nil {
                         ProgressView("正在读取设备功能…")
                             .frame(maxWidth: .infinity, minHeight: 230)
@@ -34,7 +34,7 @@ struct DeviceDetailView: View {
                         controls(for: detail)
                     }
                 }
-                .padding(24)
+                .padding(18)
             }
             Divider()
             HStack {
@@ -48,10 +48,10 @@ struct DeviceDetailView: View {
                 Button("关闭") { onClose() }
                     .keyboardShortcut(.defaultAction)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 18)
             .padding(.vertical, 14)
         }
-        .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
+        .frame(minWidth: 390, maxWidth: .infinity, maxHeight: .infinity)
         .task(id: device.did) { await store.loadControls(for: device) }
         .sheet(isPresented: $showingDeviceInformation) {
             DeviceInformationSheet(device: device)
@@ -63,8 +63,8 @@ struct DeviceDetailView: View {
             Image(systemName: device.systemImage)
                 .font(.system(size: 26, weight: .medium))
                 .foregroundStyle(device.online ? Color.accentColor : Color.secondary)
-                .frame(width: 56, height: 56)
-                .background(.quaternary, in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+                .frame(width: 50, height: 50)
+                .background(device.online ? Color.accentColor.opacity(0.10) : Color.secondary.opacity(0.10), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             VStack(alignment: .leading, spacing: 4) {
                 Text(device.name).font(.title3.weight(.semibold))
                 Text(device.roomName == "未知" ? device.homeName : "\(device.homeName) · \(device.roomName)")
@@ -83,7 +83,7 @@ struct DeviceDetailView: View {
             .buttonStyle(.borderless)
             .help("复制设备 ID")
         }
-        .padding(24)
+        .padding(18)
     }
 
     @ViewBuilder
@@ -98,19 +98,22 @@ struct DeviceDetailView: View {
         let readings = detail.props.filter { $0.readable && !controlledNames.contains($0.name) }
 
         if !switches.isEmpty {
-            GroupBox("开关") {
-                VStack(alignment: .leading, spacing: 12) {
+            InspectorSection("开关") {
+                VStack(spacing: 12) {
                     ForEach(switches) { property in
-                        Toggle(property.desc, isOn: booleanBinding(for: property))
-                            .disabled(!device.online || store.propertyValue(for: device.did, name: property.name)?.boolValue == nil || store.isCommandPending("\(device.did):\(property.name)"))
+                        InspectorControlRow(property.displayName) {
+                            Toggle("", isOn: booleanBinding(for: property))
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                                .disabled(!device.online || store.propertyValue(for: device.did, name: property.name)?.boolValue == nil || store.isCommandPending("\(device.did):\(property.name)"))
+                        }
                     }
                 }
-                .padding(.vertical, 4)
             }
         }
 
         if !detail.actions.isEmpty {
-            GroupBox("功能") {
+            InspectorSection("功能") {
                 VStack(alignment: .leading, spacing: 12) {
                     ForEach(detail.actions) { action in
                         if actionNeedsText(action) {
@@ -137,35 +140,37 @@ struct DeviceDetailView: View {
                         }
                     }
                 }
-                .padding(.vertical, 4)
             }
         }
 
         if !selectors.isEmpty {
-            GroupBox("模式与档位") {
-                VStack(alignment: .leading, spacing: 12) {
+            InspectorSection("模式与档位") {
+                VStack(spacing: 12) {
                     ForEach(selectors) { property in
-                        Picker(property.desc, selection: optionBinding(for: property)) {
-                            ForEach(property.valueList ?? []) { option in
-                                Text(option.label).tag(option.value)
+                        InspectorControlRow(property.displayName) {
+                            Picker("", selection: optionBinding(for: property)) {
+                                ForEach(property.valueList ?? []) { option in
+                                    Text(option.label).tag(option.value)
+                                }
                             }
+                            .labelsHidden()
+                            .frame(width: 150)
+                            .pickerStyle(.menu)
+                            .disabled(!device.online || store.propertyValue(for: device.did, name: property.name) == nil || store.isCommandPending("\(device.did):\(property.name)"))
                         }
-                        .pickerStyle(.menu)
-                        .disabled(!device.online || store.propertyValue(for: device.did, name: property.name) == nil || store.isCommandPending("\(device.did):\(property.name)"))
                     }
                 }
-                .padding(.vertical, 4)
             }
         }
 
         if !sliders.isEmpty {
-            GroupBox("数值控制") {
+            InspectorSection("数值控制") {
                 VStack(alignment: .leading, spacing: 16) {
                     ForEach(sliders) { property in
                         if let range = property.range {
                             VStack(alignment: .leading, spacing: 7) {
                                 HStack {
-                                    Text(property.desc)
+                                    Text(property.displayName)
                                     Spacer()
                                     Text(sliderValue(for: property, range: range).formatted())
                                         .monospacedDigit()
@@ -185,22 +190,20 @@ struct DeviceDetailView: View {
                         }
                     }
                 }
-                .padding(.vertical, 4)
             }
         }
 
         if !readings.isEmpty {
-            GroupBox("状态") {
-                VStack(alignment: .leading, spacing: 10) {
+            InspectorSection("状态") {
+                VStack(spacing: 10) {
                     ForEach(readings) { property in
-                        LabeledContent(property.desc) {
+                        InspectorControlRow(property.displayName) {
                             Text(store.propertyValue(for: device.did, name: property.name)?.displayValue ?? "—")
                                 .textSelection(.enabled)
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
-                .padding(.vertical, 4)
             }
         }
 

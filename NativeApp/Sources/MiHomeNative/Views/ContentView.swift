@@ -57,7 +57,7 @@ struct ContentView: View {
                         VStack(alignment: .leading, spacing: 24) {
                             header
                             roomPicker
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 235, maximum: 310), spacing: 16)], spacing: 16) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 235, maximum: 330), spacing: 16)], spacing: 16) {
                                 ForEach(filteredDevices) { device in
                                     Button {
                                         selectedDevice = device
@@ -95,7 +95,7 @@ struct ContentView: View {
                 }
             }
         }
-        .inspectorColumnWidth(min: 360, ideal: 430, max: 520)
+        .inspectorColumnWidth(min: 390, ideal: 440, max: 520)
     }
 
     private var header: some View {

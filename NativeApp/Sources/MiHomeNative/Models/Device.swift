@@ -59,6 +59,17 @@ struct DeviceProperty: Codable, Identifiable, Hashable, Sendable {
 
     var id: String { name }
 
+    /// MIoT descriptors commonly contain an English / Chinese pair. The inspector
+    /// intentionally uses the concise Chinese label so narrow macOS columns stay legible.
+    var displayName: String {
+        let labels = desc.split(separator: "/", maxSplits: 1).map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        guard let last = labels.last else { return desc }
+        let label = String(last)
+        return label.isEmpty ? desc : label
+    }
+
     enum CodingKeys: String, CodingKey {
         case name, desc, type, readable, writable, range
         case valueList = "value_list"
