@@ -1,13 +1,22 @@
 import SwiftUI
 
-/// A neutral, wallpaper-aware canvas with no grey or theme-colour overlay.
-/// The system material supplies only the requested background blur.
+/// The standard canvas remains calm grey; the wallpaper-aware material is
+/// deliberately reserved for the opt-in Liquid Glass mode.
 struct AppCanvasBackground: View {
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.72
+    @AppStorage("liquidGlassEnabled") private var liquidGlassEnabled = false
+    @Environment(\.colorScheme) private var colorScheme
+
+    @ViewBuilder
     var body: some View {
-        Rectangle()
-            .fill(.ultraThinMaterial)
-            .opacity(backgroundOpacity)
-            .ignoresSafeArea()
+        if liquidGlassEnabled {
+            Rectangle()
+                .fill(.ultraThinMaterial)
+                .opacity(backgroundOpacity)
+                .ignoresSafeArea()
+        } else {
+            AppThemeColor.canvas(for: colorScheme)
+                .ignoresSafeArea()
+        }
     }
 }

@@ -5,6 +5,7 @@ struct ContentView: View {
     @Bindable var store: DeviceStore
     @Environment(\.colorScheme) private var colorScheme
     @AppStorage("showOfflineDevices") private var showOfflineDevices = true
+    @AppStorage("liquidGlassEnabled") private var liquidGlassEnabled = false
     @State private var selectedHome = "全部家庭"
     @State private var selectedRoom = "全部房间"
     @State private var selectedDevice: Device?
@@ -88,7 +89,7 @@ struct ContentView: View {
             .animation(.snappy(duration: 0.24), value: selectedDevice?.did)
         }
         .background(AppCanvasBackground())
-        .background(WindowTransparencyConfigurator().allowsHitTesting(false))
+        .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
         .onChange(of: selectedHome) { _, _ in selectedRoom = "全部房间" }
         .overlay(alignment: .topTrailing) {
             if let notification = store.notification {

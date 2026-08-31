@@ -82,20 +82,22 @@ struct SettingsView: View {
                         isOn: $liquidGlassEnabled
                     )
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("背景透明度")
-                                .font(.body.weight(.medium))
-                            Spacer()
-                            Text("\(Int(backgroundOpacity * 100))%")
+                    if liquidGlassEnabled {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("背景透明度")
+                                    .font(.body.weight(.medium))
+                                Spacer()
+                                Text("\(Int(backgroundOpacity * 100))%")
+                                    .foregroundStyle(.secondary)
+                                    .monospacedDigit()
+                            }
+                            Slider(value: $backgroundOpacity, in: 0.25...0.90, step: 0.01)
+                                .tint(tint)
+                            Text("不叠加灰色或主题色，直接透出系统模糊背景。")
+                                .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .monospacedDigit()
                         }
-                        Slider(value: $backgroundOpacity, in: 0.25...0.90, step: 0.01)
-                            .tint(tint)
-                        Text("不叠加灰色或主题色，直接透出系统模糊背景。")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -138,7 +140,7 @@ struct SettingsView: View {
         .padding(28)
         .frame(width: 570, height: 610, alignment: .topLeading)
         .background(AppCanvasBackground())
-        .background(WindowTransparencyConfigurator().allowsHitTesting(false))
+        .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
     }
 }
 
