@@ -98,11 +98,11 @@ struct DeviceCardView: View {
                 )
         }
         .shadow(color: isHovered || isSelected ? Color.black.opacity(0.12) : .clear, radius: 12, y: 5)
-        .scaleEffect(isHovered || isSelected ? 1.01 : 1)
+        .scaleEffect(isHovered ? 1.01 : 1)
         .opacity(device.online ? 1 : 0.58)
         .animation(.easeOut(duration: 0.16), value: isHovered)
         .animation(AppMotion.state, value: powerState)
-        .animation(AppMotion.panel, value: isSelected)
+        .animation(AppMotion.state, value: isSelected)
         .onHover { isHovered = $0 }
         .accessibilityElement(children: .combine)
     }

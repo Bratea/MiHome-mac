@@ -98,7 +98,7 @@ struct SettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
                     }
                 }
             }
@@ -145,7 +145,7 @@ struct SettingsView: View {
         .animation(AppMotion.theme, value: appearanceMode)
         .animation(AppMotion.theme, value: themeColor)
         .animation(AppMotion.theme, value: customThemeHex)
-        .animation(AppMotion.theme, value: liquidGlassEnabled)
+        .animation(AppMotion.layout, value: liquidGlassEnabled)
         .onAppear {
             if backgroundOpacity < 0.62 {
                 backgroundOpacity = 0.82

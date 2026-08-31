@@ -9,12 +9,14 @@ struct ContentView: View {
     @State private var selectedHome = "全部家庭"
     @State private var selectedRoom = "全部房间"
     @State private var selectedDevice: Device?
+    @State private var displayedDevice: Device?
     @State private var showingActivityLog = false
 
     private var rooms: [String] { store.rooms(for: selectedHome) }
     private var filteredDevices: [Device] {
         store.devices(for: selectedHome, room: selectedRoom, includeOffline: showOfflineDevices)
     }
+    private var inspectorWidth: CGFloat { selectedDevice == nil ? 0 : 420 }
 
     var body: some View {
         NavigationSplitView {
@@ -76,29 +78,18 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 deviceList
                     .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
-
-                if let device = selectedDevice {
-                    Divider()
-                    ZStack {
-                        DeviceDetailView(device: device, store: store) {
-                            withAnimation(AppMotion.panel) { selectedDevice = nil }
-                        }
-                        .id(device.did)
-                        .transition(.asymmetric(
-                            insertion: .move(edge: .trailing).combined(with: .opacity),
-                            removal: .opacity
-                        ))
-                    }
-                    .frame(width: 420)
-                    .clipped()
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
-                }
+                inspector
             }
-            .animation(AppMotion.panel, value: selectedDevice?.did)
+            .animation(AppMotion.layout, value: selectedDevice?.did)
         }
         .background(AppCanvasBackground())
         .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
         .onChange(of: selectedHome) { _, _ in selectedRoom = "全部房间" }
+        .onChange(of: selectedDevice?.did) { _, _ in
+            if let selectedDevice {
+                displayedDevice = selectedDevice
+            }
+        }
         .overlay(alignment: .topTrailing) {
             if let notification = store.notification {
                 NotificationToast(notification: notification) {
@@ -136,7 +127,10 @@ struct ContentView: View {
                                 isSelected: selectedDevice?.did == device.did
                             )
                             .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .onTapGesture { withAnimation(AppMotion.panel) { selectedDevice = device } }
+                            .gesture(
+                                TapGesture().onEnded { presentInspector(for: device) },
+                                including: .gesture
+                            )
                             .contextMenu {
                                 Button("复制设备 ID") {
                                     NSPasteboard.general.clearContents()
@@ -152,7 +146,7 @@ struct ContentView: View {
             .contentShape(Rectangle())
             .onTapGesture {
                 if selectedDevice != nil {
-                    withAnimation(AppMotion.panel) { selectedDevice = nil }
+                    dismissInspector()
                 }
             }
             .navigationTitle(selectedHome == "全部家庭" ? "全部设备" : selectedHome)
@@ -161,9 +155,46 @@ struct ContentView: View {
     }
 
     private func powerToggle(for device: Device) -> (() -> Void)? {
-        guard let isOn = store.powerState(for: device) else { return nil }
+        guard store.powerState(for: device) != nil else { return nil }
         return {
+            guard let isOn = store.powerState(for: device) else { return }
             Task { await store.setProperty(did: device.did, name: "on", value: .bool(!isOn)) }
+        }
+    }
+
+    private var inspector: some View {
+        HStack(spacing: 0) {
+            Divider()
+                .opacity(selectedDevice == nil ? 0 : 1)
+
+            ZStack {
+                if let device = displayedDevice {
+                    DeviceDetailView(device: device, store: store) {
+                        dismissInspector()
+                    }
+                    .id(device.did)
+                    .opacity(selectedDevice == nil ? 0 : 1)
+                    .transition(.opacity)
+                }
+            }
+            .frame(width: inspectorWidth)
+            .clipped()
+            .allowsHitTesting(selectedDevice != nil)
+        }
+        .frame(width: inspectorWidth + (selectedDevice == nil ? 0 : 1))
+        .clipped()
+    }
+
+    private func presentInspector(for device: Device) {
+        displayedDevice = device
+        withAnimation(AppMotion.layout) {
+            selectedDevice = device
+        }
+    }
+
+    private func dismissInspector() {
+        withAnimation(AppMotion.layout) {
+            selectedDevice = nil
         }
     }
 
