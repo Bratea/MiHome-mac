@@ -29,7 +29,7 @@ struct MiHomeNativeApp: App {
         .menuBarExtraStyle(.menu)
 
         Settings {
-            SettingsView()
+            SettingsView(store: store)
         }
     }
 }

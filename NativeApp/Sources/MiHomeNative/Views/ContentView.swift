@@ -37,8 +37,13 @@ struct ContentView: View {
                     Divider()
                     SettingsLink {
                         Label("设置", systemImage: "gearshape")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 9)
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
                 .font(.caption)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -61,6 +66,17 @@ struct ContentView: View {
             .animation(.snappy(duration: 0.24), value: selectedDevice?.did)
         }
         .onChange(of: selectedHome) { _, _ in selectedRoom = "全部房间" }
+        .overlay(alignment: .topTrailing) {
+            if let notification = store.notification {
+                NotificationToast(notification: notification) {
+                    store.dismissNotification(id: notification.id)
+                }
+                .padding(20)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
+                .zIndex(1)
+            }
+        }
+        .animation(.snappy(duration: 0.28), value: store.notification?.id)
     }
 
     @ViewBuilder

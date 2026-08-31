@@ -14,6 +14,8 @@ final class DeviceStore {
     private(set) var controlErrors: [String: String] = [:]
     private(set) var loadingControls: Set<String> = []
     private(set) var pendingCommands: Set<String> = []
+    private(set) var activityLogs: [ActivityLog] = []
+    private(set) var notification: AppNotification?
 
     var onlineCount: Int { devices.filter(\.online).count }
     var homes: [String] {
@@ -64,6 +66,15 @@ final class DeviceStore {
     func isLoadingControl(for did: String) -> Bool { loadingControls.contains(did) }
     func isCommandPending(_ key: String) -> Bool { pendingCommands.contains(key) }
 
+    func clearActivityLogs() {
+        activityLogs.removeAll()
+    }
+
+    func dismissNotification(id: UUID) {
+        guard notification?.id == id else { return }
+        notification = nil
+    }
+
     func loadControls(for device: Device) async {
         guard !loadingControls.contains(device.did) else { return }
         loadingControls.insert(device.did)
@@ -81,6 +92,7 @@ final class DeviceStore {
             }
         } catch {
             controlErrors[device.did] = error.localizedDescription
+            reportFailure(title: "读取设备功能失败", message: error.localizedDescription)
         }
     }
 
@@ -94,8 +106,10 @@ final class DeviceStore {
             try await Task.detached { try MijiaBridge.writeProperty(did: did, name: name, value: value) }.value
             propertyValues[did, default: [:]][name] = value
             if name == "on", let state = value.boolValue { powerStates[did] = state }
+            reportSuccess(title: "设备状态已更新", message: "\(deviceName(for: did)) · \(name)")
         } catch {
             controlErrors[did] = error.localizedDescription
+            reportFailure(title: "更新设备状态失败", message: error.localizedDescription)
         }
     }
 
@@ -107,8 +121,33 @@ final class DeviceStore {
         defer { pendingCommands.remove(key) }
         do {
             try await Task.detached { try MijiaBridge.runAction(did: did, name: name, params: params) }.value
+            reportSuccess(title: "动作已发送", message: "\(deviceName(for: did)) · \(name)")
         } catch {
             controlErrors[did] = error.localizedDescription
+            reportFailure(title: "执行动作失败", message: error.localizedDescription)
+        }
+    }
+
+    private func deviceName(for did: String) -> String {
+        devices.first(where: { $0.did == did })?.name ?? "设备"
+    }
+
+    private func reportSuccess(title: String, message: String) {
+        report(level: .success, title: title, message: message)
+    }
+
+    private func reportFailure(title: String, message: String) {
+        report(level: .failure, title: title, message: message)
+    }
+
+    private func report(level: ActivityLevel, title: String, message: String) {
+        activityLogs.insert(ActivityLog(date: .now, level: level, title: title, message: message), at: 0)
+        activityLogs = Array(activityLogs.prefix(30))
+        let newNotification = AppNotification(level: level, title: title, message: message)
+        notification = newNotification
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            self?.dismissNotification(id: newNotification.id)
         }
     }
 }
