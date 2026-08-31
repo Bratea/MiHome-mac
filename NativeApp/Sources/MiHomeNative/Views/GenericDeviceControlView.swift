@@ -11,24 +11,26 @@ struct GenericDeviceControlView: View {
     @State private var sliderDrafts: [String: Double] = [:]
     @State private var textDrafts: [String: String] = [:]
     @State private var actionDrafts: [String: String] = [:]
+    @State private var workbenchIdentifiers: [String]?
+    @State private var showingWorkbenchEditor = false
 
     private var switches: [DeviceProperty] {
-        detail.props.filter { $0.writable && $0.type == "bool" }
+        ordered(detail.props.filter { $0.writable && $0.type == "bool" })
     }
 
     private var selectors: [DeviceProperty] {
-        detail.props.filter { $0.writable && $0.type != "bool" && !($0.valueList ?? []).isEmpty }
+        ordered(detail.props.filter { $0.writable && $0.type != "bool" && !($0.valueList ?? []).isEmpty })
     }
 
     private var sliders: [DeviceProperty] {
-        detail.props.filter {
+        ordered(detail.props.filter {
             $0.writable && ($0.valueList ?? []).isEmpty
                 && ["int", "uint", "float"].contains($0.type) && ($0.range?.count ?? 0) == 3
-        }
+        })
     }
 
     private var textProperties: [DeviceProperty] {
-        detail.props.filter { $0.writable && $0.type == "string" && ($0.valueList ?? []).isEmpty }
+        ordered(detail.props.filter { $0.writable && $0.type == "string" && ($0.valueList ?? []).isEmpty })
     }
 
     private var controlledNames: Set<String> {
@@ -48,11 +50,11 @@ struct GenericDeviceControlView: View {
     }
 
     private var textActions: [DeviceAction] {
-        detail.actions.filter { ["execute-text-directive", "play-text", "play-music", "play-radio"].contains($0.name) }
+        orderedActions(detail.actions.filter { ["execute-text-directive", "play-text", "play-music", "play-radio"].contains($0.name) })
     }
 
     private var directActions: [DeviceAction] {
-        detail.actions.filter { !textActions.contains($0) }
+        orderedActions(detail.actions.filter { !textActions.contains($0) })
     }
 
     private var hasControls: Bool {
@@ -61,9 +63,47 @@ struct GenericDeviceControlView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
+            workbenchHeader
             overview
             controls
             status
+        }
+        .task(id: detail.did) {
+            workbenchIdentifiers = DeviceWorkbenchStore.load(did: detail.did)
+        }
+        .onChange(of: workbenchIdentifiers) { _, identifiers in
+            guard let identifiers else { return }
+            DeviceWorkbenchStore.save(identifiers, did: detail.did)
+        }
+        .sheet(isPresented: $showingWorkbenchEditor) {
+            DeviceWorkbenchEditor(
+                deviceName: device.name,
+                items: workbenchItems,
+                selectedIdentifiers: Binding(
+                    get: { workbenchIdentifiers ?? workbenchItems.map(\.id) },
+                    set: { workbenchIdentifiers = $0 }
+                )
+            )
+        }
+    }
+
+    private var workbenchHeader: some View {
+        HStack {
+            Label("设备控制台", systemImage: "rectangle.3.group")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button("自定义") { showingWorkbenchEditor = true }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+        }
+    }
+
+    private var workbenchItems: [WorkbenchItem] {
+        detail.props.filter(\.writable).map {
+            WorkbenchItem(id: propertyID($0), title: $0.displayName, symbol: symbol(for: $0))
+        } + detail.actions.map {
+            WorkbenchItem(id: actionID($0), title: $0.desc, symbol: "bolt.circle")
         }
     }
 
@@ -315,6 +355,37 @@ struct GenericDeviceControlView: View {
     private func stringValue(for property: DeviceProperty) -> String {
         guard case let .string(value)? = store.propertyValue(for: device.did, name: property.name) else { return "" }
         return value
+    }
+
+    private func propertyID(_ property: DeviceProperty) -> String { "property:\(property.name)" }
+    private func actionID(_ action: DeviceAction) -> String { "action:\(action.name)" }
+
+    private func ordered(_ properties: [DeviceProperty]) -> [DeviceProperty] {
+        let selected = workbenchIdentifiers
+        let visible = properties.filter { selected?.contains(propertyID($0)) ?? true }
+        return visible.sorted { position(of: propertyID($0), in: selected) < position(of: propertyID($1), in: selected) }
+    }
+
+    private func orderedActions(_ actions: [DeviceAction]) -> [DeviceAction] {
+        let selected = workbenchIdentifiers
+        let visible = actions.filter { selected?.contains(actionID($0)) ?? true }
+        return visible.sorted { position(of: actionID($0), in: selected) < position(of: actionID($1), in: selected) }
+    }
+
+    private func position(of identifier: String, in selected: [String]?) -> Int {
+        selected?.firstIndex(of: identifier) ?? Int.max
+    }
+
+    private func symbol(for property: DeviceProperty) -> String {
+        switch property.name {
+        case "on": "power"
+        case "target-temperature", "temperature": "thermometer.medium"
+        case "mode": "fan"
+        case "fan-level": "wind"
+        case "brightness": "sun.max"
+        case "battery-level": "battery.75percent"
+        default: "slider.horizontal.3"
+        }
     }
 
     private func isDisabled(_ property: DeviceProperty) -> Bool {
