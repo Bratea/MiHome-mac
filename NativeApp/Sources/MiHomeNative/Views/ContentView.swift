@@ -45,57 +45,65 @@ struct ContentView: View {
                 .padding(14)
             }
         } detail: {
-            Group {
-                if store.devices.isEmpty {
-                    ContentUnavailableView(
-                        "尚未同步设备",
-                        systemImage: "homekit",
-                        description: Text(store.lastError ?? "请在设置中检查米家连接。")
-                    )
-                } else {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 24) {
-                            header
-                            roomPicker
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 235, maximum: 330), spacing: 16)], spacing: 16) {
-                                ForEach(filteredDevices) { device in
-                                    Button {
-                                        selectedDevice = device
-                                    } label: {
-                                        DeviceCardView(
-                                            device: device,
-                                            powerState: store.powerState(for: device),
-                                            metric: store.metrics[device.did]
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                    .contextMenu {
-                                        Button("复制设备 ID") {
-                                            NSPasteboard.general.clearContents()
-                                            NSPasteboard.general.setString(device.did, forType: .string)
-                                        }
-                                    }
-                                    .accessibilityHint("打开设备详情")
-                                }
-                            }
-                        }
-                        .padding(28)
+            HStack(spacing: 0) {
+                deviceList
+                    .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
+
+                if let device = selectedDevice {
+                    Divider()
+                    DeviceDetailView(device: device, store: store) {
+                        selectedDevice = nil
                     }
-                    .background(.background)
-                    .navigationTitle(selectedHome == "全部家庭" ? "全部设备" : selectedHome)
-                    .toolbar { toolbarContent }
+                    .frame(width: 420)
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
+            .animation(.snappy(duration: 0.24), value: selectedDevice?.did)
         }
         .onChange(of: selectedHome) { _, _ in selectedRoom = "全部房间" }
-        .inspector(isPresented: inspectorPresented) {
-            if let device = selectedDevice {
-                DeviceDetailView(device: device, store: store) {
-                    selectedDevice = nil
+    }
+
+    @ViewBuilder
+    private var deviceList: some View {
+        if store.devices.isEmpty {
+            ContentUnavailableView(
+                "尚未同步设备",
+                systemImage: "homekit",
+                description: Text(store.lastError ?? "请在设置中检查米家连接。")
+            )
+        } else {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    header
+                    roomPicker
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 235, maximum: 330), spacing: 16)], spacing: 16) {
+                        ForEach(filteredDevices) { device in
+                            Button {
+                                selectedDevice = device
+                            } label: {
+                                DeviceCardView(
+                                    device: device,
+                                    powerState: store.powerState(for: device),
+                                    metric: store.metrics[device.did]
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .contextMenu {
+                                Button("复制设备 ID") {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(device.did, forType: .string)
+                                }
+                            }
+                            .accessibilityHint("打开设备详情")
+                        }
+                    }
                 }
+                .padding(28)
             }
+            .background(.background)
+            .navigationTitle(selectedHome == "全部家庭" ? "全部设备" : selectedHome)
+            .toolbar { toolbarContent }
         }
-        .inspectorColumnWidth(min: 390, ideal: 440, max: 520)
     }
 
     private var header: some View {
@@ -130,15 +138,6 @@ struct ContentView: View {
                 .toggleStyle(.switch)
                 .controlSize(.small)
         }
-    }
-
-    private var inspectorPresented: Binding<Bool> {
-        Binding(
-            get: { selectedDevice != nil },
-            set: { isPresented in
-                if !isPresented { selectedDevice = nil }
-            }
-        )
     }
 
     @ToolbarContentBuilder

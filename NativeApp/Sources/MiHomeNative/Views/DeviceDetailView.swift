@@ -51,7 +51,7 @@ struct DeviceDetailView: View {
             .padding(.horizontal, 18)
             .padding(.vertical, 14)
         }
-        .frame(minWidth: 390, maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task(id: device.did) { await store.loadControls(for: device) }
         .sheet(isPresented: $showingDeviceInformation) {
             DeviceInformationSheet(device: device)
