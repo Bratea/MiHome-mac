@@ -30,7 +30,7 @@ cd NativeApp
 ./script/package_dmg.sh
 ```
 
-产物为 `dist/MiHome-0.2.0-macOS-native.dmg`。打开镜像后，将 `MiHome.app` 拖至 Applications 即可安装。
+产物为 `dist/MiHome-1.0.0-macOS-native.dmg`。打开镜像后，将 `MiHome.app` 拖至 Applications 即可安装。
 
 ## 分发说明
 
