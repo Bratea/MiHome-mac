@@ -136,7 +136,7 @@ struct ContentView: View {
                 }
                 .padding(28)
             }
-            .background(AppThemeColor.canvas(for: colorScheme))
+            .background(AppCanvasBackground())
             .contentShape(Rectangle())
             .onTapGesture {
                 if selectedDevice != nil {

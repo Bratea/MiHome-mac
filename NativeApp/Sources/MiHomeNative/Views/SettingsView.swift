@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
     @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
     @AppStorage("liquidGlassEnabled") private var liquidGlassEnabled = false
+    @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.72
     @Environment(\.colorScheme) private var colorScheme
 
     private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
@@ -80,6 +81,22 @@ struct SettingsView: View {
                         subtitle: "给卡片和弹出面板启用 Apple 系统玻璃质感",
                         isOn: $liquidGlassEnabled
                     )
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("背景透明度")
+                                .font(.body.weight(.medium))
+                            Spacer()
+                            Text("\(Int(backgroundOpacity * 100))%")
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                        Slider(value: $backgroundOpacity, in: 0.25...0.90, step: 0.01)
+                            .tint(tint)
+                        Text("降低数值可显示更多系统材质层次。")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
 
@@ -119,8 +136,8 @@ struct SettingsView: View {
             Spacer(minLength: 0)
         }
         .padding(28)
-        .frame(width: 570, height: 560, alignment: .topLeading)
-        .background(AppThemeColor.canvas(for: colorScheme))
+        .frame(width: 570, height: 610, alignment: .topLeading)
+        .background(AppCanvasBackground())
     }
 }
 
