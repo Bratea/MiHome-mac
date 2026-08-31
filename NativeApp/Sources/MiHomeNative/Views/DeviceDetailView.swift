@@ -53,9 +53,6 @@ struct DeviceDetailView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .task(id: device.did) { await store.loadControls(for: device) }
-        .sheet(isPresented: $showingDeviceInformation) {
-            DeviceInformationSheet(device: device)
-        }
     }
 
     private var header: some View {
@@ -74,14 +71,28 @@ struct DeviceDetailView: View {
                     .foregroundStyle(device.online ? .green : .secondary)
             }
             Spacer()
-            Button {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(device.did, forType: .string)
-            } label: {
-                Image(systemName: "doc.on.doc")
+            VStack(spacing: 6) {
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(device.did, forType: .string)
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                }
+                .buttonStyle(.borderless)
+                .help("复制设备 ID")
+
+                Button {
+                    showingDeviceInformation = true
+                } label: {
+                    Image(systemName: "info.circle")
+                }
+                .buttonStyle(.borderless)
+                .help("设备信息")
+                .popover(isPresented: $showingDeviceInformation, arrowEdge: .trailing) {
+                    DeviceInformationPopover(device: device)
+                        .frame(width: 340)
+                }
             }
-            .buttonStyle(.borderless)
-            .help("复制设备 ID")
         }
         .padding(18)
     }
@@ -207,14 +218,6 @@ struct DeviceDetailView: View {
             }
         }
 
-        Button {
-            showingDeviceInformation = true
-        } label: {
-            Label("设备信息", systemImage: "info.circle")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.bordered)
-        .controlSize(.large)
     }
 
     private func booleanBinding(for property: DeviceProperty) -> Binding<Bool> {

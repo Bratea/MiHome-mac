@@ -1,9 +1,8 @@
 import AppKit
 import SwiftUI
 
-struct DeviceInformationSheet: View {
+struct DeviceInformationPopover: View {
     let device: Device
-    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
         VStack(alignment: .leading, spacing: 22) {
@@ -21,6 +20,9 @@ struct DeviceInformationSheet: View {
                 }
             }
 
+            Text("设备信息")
+                .font(.headline)
+
             Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 12) {
                 infoRow("家庭", value: device.homeName)
                 infoRow("房间", value: device.roomName)
@@ -28,18 +30,16 @@ struct DeviceInformationSheet: View {
                 infoRow("设备 ID", value: device.did)
             }
 
-            HStack {
-                Button("复制设备 ID") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(device.did, forType: .string)
-                }
-                Spacer()
-                Button("完成") { dismiss() }
-                    .keyboardShortcut(.defaultAction)
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(device.did, forType: .string)
+            } label: {
+                Label("复制设备 ID", systemImage: "doc.on.doc")
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.bordered)
         }
-        .padding(26)
-        .frame(width: 430)
+        .padding(20)
     }
 
     @ViewBuilder

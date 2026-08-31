@@ -49,7 +49,7 @@ struct DeviceCardView: View {
             .padding(.top, 13)
         }
         .padding(18)
-        .frame(maxWidth: .infinity, minHeight: 170, maxHeight: 190, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: 158, maxHeight: 176, alignment: .topLeading)
         .background(isHovered ? .thinMaterial : .regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
