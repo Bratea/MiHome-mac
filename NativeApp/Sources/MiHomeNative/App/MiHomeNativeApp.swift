@@ -18,9 +18,15 @@ struct MiHomeNativeApp: App {
             }
         }
 
-        MenuBarExtra("米家", systemImage: "house.fill") {
+        MenuBarExtra {
             MenuBarView(store: store)
         }
+        label: {
+            Image(systemName: store.onlineCount > 0 ? "house.fill" : "house")
+                .symbolRenderingMode(.hierarchical)
+                .accessibilityLabel("米家：\(store.onlineCount) 台设备在线")
+        }
+        .menuBarExtraStyle(.menu)
 
         Settings {
             SettingsView()

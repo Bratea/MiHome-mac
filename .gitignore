@@ -24,6 +24,7 @@ build_nuitka/
 # ---- SwiftPM / 原生 macOS 构建产物 ----
 NativeApp/.build/
 NativeApp/dist/
+*.iconset/
 
 # ---- IDE / 编辑器 ----
 .vscode/

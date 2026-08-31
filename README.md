@@ -8,29 +8,29 @@
 
 - 米家 App 扫码登录；凭据与 `mijiaAPI` CLI 共用。
 - 按家庭和房间显示设备，并按设备 spec 自动生成开关、滑块、枚举和动作控件。
-- 菜单栏图标、设备快捷控制、小爱音箱快捷控制和语音指令。
-- 深色、浅色或跟随 macOS 系统主题。
-- 已打包的 `.app` 可在设置中添加或移除当前用户的登录启动项。
-- 打包版的设置和设备缓存保存于 `~/Library/Application Support/MiHome-Mac/`。
+- 原生 SwiftUI 窗口、侧边栏、右侧设备检查器和 macOS 状态栏菜单。
+- 设备检查器会按设备 spec 自动生成开关、菜单、滑杆和动作按钮。
+- 设备与上次已知状态缓存保存于 `~/Library/Application Support/MiHome-Mac/`。
 
 ## 本地运行
 
-要求：macOS、Python 3.10 或以上、Command Line Tools。
+要求：macOS 14 或以上、Python 3.10 或以上、Command Line Tools。
 
 ```bash
-cd /Users/tongtong/Desktop/person/MiHome-Mac
+cd /Users/tongtong/Desktop/person/MiHome-Mac/NativeApp
 ./script/build_and_run.sh
 ```
 
-脚本会创建虚拟环境、安装依赖、生成 `dist/MiHome.app` 并启动它。首次执行会下载 Qt 运行时，耗时较长。
+脚本会构建 SwiftUI app、嵌入米家协议桥并启动 `NativeApp/dist/MiHome.app`。
 
 ## 构建 DMG
 
 ```bash
-./script/create_dmg.sh
+cd NativeApp
+./script/package_dmg.sh
 ```
 
-产物为 `dist/MiHome-0.1.0-macOS.dmg`。打开镜像后，将 `MiHome.app` 拖至 Applications 即可安装。
+产物为 `dist/MiHome-0.2.0-macOS-native.dmg`。打开镜像后，将 `MiHome.app` 拖至 Applications 即可安装。
 
 ## 分发说明
 
@@ -39,12 +39,10 @@ cd /Users/tongtong/Desktop/person/MiHome-Mac
 ## 项目结构
 
 ```text
-app/                      应用与内置 SiliconUI 源码
+NativeApp/                原生 SwiftUI/AppKit 应用与构建脚本
+app/core/                 设备规格与米家协议适配层
+script/native_bridge.py   嵌入式协议桥入口
 resources/                macOS 图标等打包资源
-script/build_and_run.sh   生成和启动 macOS app
-script/create_dmg.sh      创建并校验 DMG
-tests/                    冒烟与主题测试
-dist/                     本地构建产物（不纳入版本控制）
 ```
 
 ## 许可证

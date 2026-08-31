@@ -16,7 +16,7 @@ swift build
 BIN_PATH="$(swift build --show-bin-path)/$APP_NAME"
 mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources"
 cp "$BIN_PATH" "$APP_DIR/Contents/MacOS/$PRODUCT_NAME"
-cp "$ROOT_DIR/../resources/MiHome.icns" "$APP_DIR/Contents/Resources/MiHome.icns"
+cp "$ROOT_DIR/../resources/MiHomeMinimal.icns" "$APP_DIR/Contents/Resources/MiHomeMinimal.icns"
 cp "$ROOT_DIR/AppBundle/Info.plist" "$APP_DIR/Contents/Info.plist"
 mkdir -p "$APP_DIR/Contents/Resources/Protocol"
 ditto "$PROTOCOL_DIR" "$APP_DIR/Contents/Resources/Protocol/MiHomeProtocol"

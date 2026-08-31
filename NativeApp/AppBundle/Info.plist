@@ -3,7 +3,7 @@
 <plist version="1.0"><dict>
   <key>CFBundleDisplayName</key><string>米家</string>
   <key>CFBundleExecutable</key><string>MiHome</string>
-  <key>CFBundleIconFile</key><string>MiHome</string>
+  <key>CFBundleIconFile</key><string>MiHomeMinimal</string>
   <key>CFBundleIdentifier</key><string>com.mihome.native</string>
   <key>CFBundleName</key><string>MiHome</string>
   <key>CFBundlePackageType</key><string>APPL</string>
