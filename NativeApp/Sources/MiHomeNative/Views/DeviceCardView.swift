@@ -4,6 +4,8 @@ struct DeviceCardView: View {
     let device: Device
     let powerState: Bool?
     let metric: String?
+    let onTogglePower: (() -> Void)?
+    let isPowerPending: Bool
     @State private var isHovered = false
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
     @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
@@ -21,10 +23,26 @@ struct DeviceCardView: View {
                 Spacer(minLength: 12)
 
                 if let powerState {
-                    Image(systemName: powerState ? "power.circle.fill" : "power.circle")
-                        .font(.title3)
-                        .foregroundStyle(powerState ? .green : .secondary)
-                        .accessibilityLabel(powerState ? "当前已打开" : "当前已关闭")
+                    Button {
+                        onTogglePower?()
+                    } label: {
+                        Group {
+                            if isPowerPending {
+                                ProgressView().controlSize(.small)
+                            } else {
+                                Image(systemName: "power")
+                                    .font(.system(size: 19, weight: .semibold))
+                            }
+                        }
+                        .foregroundStyle(powerTint)
+                        .frame(width: 42, height: 42)
+                        .background(powerTint.opacity(0.14), in: Circle())
+                        .overlay { Circle().strokeBorder(powerTint.opacity(0.22), lineWidth: 1) }
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(onTogglePower == nil || isPowerPending)
+                    .help(powerState ? "关闭设备" : "开启设备")
+                    .accessibilityLabel(powerState ? "关闭设备" : "开启设备")
                 }
             }
 
@@ -44,9 +62,21 @@ struct DeviceCardView: View {
                 Circle()
                     .fill(device.online ? Color.green : Color.secondary.opacity(0.55))
                     .frame(width: 6, height: 6)
-                Text(statusLabel)
+                Text(device.online ? "在线" : "离线")
                     .font(.caption)
                     .foregroundStyle(device.online ? .primary : .secondary)
+                if let powerState, device.online {
+                    Text(powerState ? "已开启" : "已关闭")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(powerState ? Color.green : Color.orange)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background((powerState ? Color.green : Color.orange).opacity(0.13), in: Capsule())
+                } else if let metric {
+                    Text(metric)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
             }
             .padding(.top, 13)
@@ -75,9 +105,7 @@ struct DeviceCardView: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var statusLabel: String {
-        guard device.online else { return "离线" }
-        if powerState == false { return "在线 · 已关闭" }
-        return powerState == true ? "在线 · 已开启" : (metric ?? "在线")
+    private var powerTint: Color {
+        powerState == true ? .green : .orange
     }
 }

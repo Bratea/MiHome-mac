@@ -119,16 +119,15 @@ struct ContentView: View {
                     roomPicker
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 210, maximum: 240), spacing: 16)], spacing: 16) {
                         ForEach(filteredDevices) { device in
-                            Button {
-                                selectedDevice = device
-                            } label: {
-                                DeviceCardView(
-                                    device: device,
-                                    powerState: store.powerState(for: device),
-                                    metric: store.metrics[device.did]
-                                )
-                            }
-                            .buttonStyle(.plain)
+                            DeviceCardView(
+                                device: device,
+                                powerState: store.powerState(for: device),
+                                metric: store.metrics[device.did],
+                                onTogglePower: powerToggle(for: device),
+                                isPowerPending: store.isCommandPending("\(device.did):on")
+                            )
+                            .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                            .onTapGesture { selectedDevice = device }
                             .contextMenu {
                                 Button("复制设备 ID") {
                                     NSPasteboard.general.clearContents()
@@ -149,6 +148,13 @@ struct ContentView: View {
             }
             .navigationTitle(selectedHome == "全部家庭" ? "全部设备" : selectedHome)
             .toolbar { toolbarContent }
+        }
+    }
+
+    private func powerToggle(for device: Device) -> (() -> Void)? {
+        guard let isOn = store.powerState(for: device) else { return nil }
+        return {
+            Task { await store.setProperty(did: device.did, name: "on", value: .bool(!isOn)) }
         }
     }
 
