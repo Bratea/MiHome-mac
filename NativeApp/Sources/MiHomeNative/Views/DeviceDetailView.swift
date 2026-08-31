@@ -83,7 +83,7 @@ struct DeviceDetailView: View {
                     }
                 }
                 .font(.caption.weight(.medium))
-                .foregroundStyle(device.online ? .green : .secondary)
+                .foregroundStyle(statusTint)
             }
             Spacer()
             VStack(spacing: 6) {
@@ -120,5 +120,10 @@ struct DeviceDetailView: View {
         } else {
             GenericDeviceControlView(device: device, detail: detail, store: store)
         }
+    }
+
+    private var statusTint: Color {
+        guard device.online else { return .secondary }
+        return powerState == false ? .red : .green
     }
 }

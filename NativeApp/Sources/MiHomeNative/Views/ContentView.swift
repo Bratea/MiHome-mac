@@ -66,7 +66,6 @@ struct ContentView: View {
                             ActivityLogView(store: store)
                                 .frame(width: 360, height: 440)
                         }
-                        .animation(AppMotion.panel, value: showingActivityLog)
                     }
                 }
                 .font(.caption)

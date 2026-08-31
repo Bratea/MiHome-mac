@@ -34,6 +34,7 @@ struct ACPartnerControlView: View {
             Text(isPowerOn ? temperatureText : "已关闭")
                 .font(.system(size: isPowerOn ? 48 : 34, weight: .medium, design: .rounded))
                 .monospacedDigit()
+                .foregroundStyle(isPowerOn ? Color.primary : Color.red)
             Text(isPowerOn ? (selectedOptionLabel(for: mode) ?? "空调") : "设定温度 \(temperatureText) · \(selectedOptionLabel(for: mode) ?? "自动")")
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)

@@ -69,10 +69,10 @@ struct DeviceCardView: View {
                 if let powerState, device.online {
                     Text(powerState ? "已开启" : "已关闭")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(powerState ? Color.green : Color.orange)
+                        .foregroundStyle(powerState ? Color.green : Color.red)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
-                        .background((powerState ? Color.green : Color.orange).opacity(0.13), in: Capsule())
+                        .background((powerState ? Color.green : Color.red).opacity(0.13), in: Capsule())
                 } else if let metric {
                     Text(metric)
                         .font(.caption)
@@ -109,6 +109,6 @@ struct DeviceCardView: View {
     }
 
     private var powerTint: Color {
-        powerState == true ? .green : .orange
+        powerState == true ? .green : .red
     }
 }
