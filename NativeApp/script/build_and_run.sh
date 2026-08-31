@@ -6,6 +6,7 @@ APP_NAME="MiHomeNative"
 PRODUCT_NAME="MiHome"
 MODE="${1:-run}"
 APP_DIR="$ROOT_DIR/dist/$PRODUCT_NAME.app"
+TEST_APP_DIR="$ROOT_DIR/../dist/$PRODUCT_NAME Test.app"
 PROTOCOL_DIR="$ROOT_DIR/.build/protocol/dist/MiHomeProtocol"
 
 cd "$ROOT_DIR"
@@ -22,17 +23,24 @@ mkdir -p "$APP_DIR/Contents/Resources/Protocol"
 ditto "$PROTOCOL_DIR" "$APP_DIR/Contents/Resources/Protocol/MiHomeProtocol"
 /usr/bin/codesign --force --sign - "$APP_DIR" >/dev/null
 
+# Keep a directly launchable testing build beside the DMG. This is intentionally
+# refreshed on every build so its contents always match the current source.
+mkdir -p "$(dirname "$TEST_APP_DIR")"
+rm -rf "$TEST_APP_DIR"
+ditto "$APP_DIR" "$TEST_APP_DIR"
+/usr/bin/codesign --force --sign - "$TEST_APP_DIR" >/dev/null
+
 case "$MODE" in
   bundle)
     ;;
   run)
-    /usr/bin/open -n "$APP_DIR"
+    /usr/bin/open -n "$TEST_APP_DIR"
     ;;
   --debug|debug)
     lldb -- "$APP_DIR/Contents/MacOS/$PRODUCT_NAME"
     ;;
   --verify|verify)
-    /usr/bin/open -n "$APP_DIR"
+    /usr/bin/open -n "$TEST_APP_DIR"
     sleep 1
     pgrep -x "$PRODUCT_NAME" >/dev/null
     ;;

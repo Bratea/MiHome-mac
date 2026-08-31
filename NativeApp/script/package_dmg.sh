@@ -7,6 +7,7 @@ DMG_PATH="$OUTPUT_DIR/MiHome-0.2.0-macOS-native.dmg"
 
 "$ROOT_DIR/script/build_and_run.sh" bundle
 mkdir -p "$OUTPUT_DIR"
+# build_and_run.sh also refreshes "$OUTPUT_DIR/MiHome Test.app" for direct testing.
 hdiutil create \
   -volname "米家" \
   -srcfolder "$ROOT_DIR/dist/MiHome.app" \
