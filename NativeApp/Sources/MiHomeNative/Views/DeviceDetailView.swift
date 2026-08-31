@@ -36,6 +36,8 @@ struct DeviceDetailView: View {
                         .frame(maxWidth: .infinity, minHeight: 230)
                     } else if let detail {
                         controls(for: detail)
+                            .id(detail.did)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
                     }
                 }
                 .padding(18)
@@ -56,6 +58,9 @@ struct DeviceDetailView: View {
             .padding(.vertical, 14)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .animation(AppMotion.panel, value: device.did)
+        .animation(AppMotion.panel, value: detail?.did)
+        .animation(AppMotion.state, value: powerState)
         .task(id: device.did) { await store.loadControls(for: device) }
     }
 
@@ -102,6 +107,7 @@ struct DeviceDetailView: View {
                     DeviceInformationPopover(device: device)
                         .frame(width: 340)
                 }
+                .animation(AppMotion.panel, value: showingDeviceInformation)
             }
         }
         .padding(18)

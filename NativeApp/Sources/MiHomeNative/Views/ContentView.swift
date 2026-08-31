@@ -66,6 +66,7 @@ struct ContentView: View {
                             ActivityLogView(store: store)
                                 .frame(width: 360, height: 440)
                         }
+                        .animation(AppMotion.panel, value: showingActivityLog)
                     }
                 }
                 .font(.caption)
@@ -79,14 +80,22 @@ struct ContentView: View {
 
                 if let device = selectedDevice {
                     Divider()
-                    DeviceDetailView(device: device, store: store) {
-                        selectedDevice = nil
+                    ZStack {
+                        DeviceDetailView(device: device, store: store) {
+                            withAnimation(AppMotion.panel) { selectedDevice = nil }
+                        }
+                        .id(device.did)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .opacity
+                        ))
                     }
                     .frame(width: 420)
+                    .clipped()
                     .transition(.move(edge: .trailing).combined(with: .opacity))
                 }
             }
-            .animation(.snappy(duration: 0.24), value: selectedDevice?.did)
+            .animation(AppMotion.panel, value: selectedDevice?.did)
         }
         .background(AppCanvasBackground())
         .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
@@ -124,10 +133,11 @@ struct ContentView: View {
                                 powerState: store.powerState(for: device),
                                 metric: store.metrics[device.did],
                                 onTogglePower: powerToggle(for: device),
-                                isPowerPending: store.isCommandPending("\(device.did):on")
+                                isPowerPending: store.isCommandPending("\(device.did):on"),
+                                isSelected: selectedDevice?.did == device.did
                             )
                             .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                            .onTapGesture { selectedDevice = device }
+                            .onTapGesture { withAnimation(AppMotion.panel) { selectedDevice = device } }
                             .contextMenu {
                                 Button("复制设备 ID") {
                                     NSPasteboard.general.clearContents()
@@ -143,7 +153,7 @@ struct ContentView: View {
             .contentShape(Rectangle())
             .onTapGesture {
                 if selectedDevice != nil {
-                    selectedDevice = nil
+                    withAnimation(AppMotion.panel) { selectedDevice = nil }
                 }
             }
             .navigationTitle(selectedHome == "全部家庭" ? "全部设备" : selectedHome)

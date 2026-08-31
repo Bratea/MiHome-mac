@@ -98,6 +98,7 @@ struct SettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
                 }
             }
@@ -141,6 +142,10 @@ struct SettingsView: View {
         .frame(width: 570, height: 610, alignment: .topLeading)
         .background(AppCanvasBackground())
         .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
+        .animation(AppMotion.theme, value: appearanceMode)
+        .animation(AppMotion.theme, value: themeColor)
+        .animation(AppMotion.theme, value: customThemeHex)
+        .animation(AppMotion.theme, value: liquidGlassEnabled)
         .onAppear {
             if backgroundOpacity < 0.62 {
                 backgroundOpacity = 0.82

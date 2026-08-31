@@ -20,6 +20,9 @@ struct MiHomeNativeApp: App {
                 .frame(minWidth: 880, minHeight: 580)
                 .preferredColorScheme(preferredScheme)
                 .tint(tint)
+                .animation(AppMotion.theme, value: appearanceMode)
+                .animation(AppMotion.theme, value: themeColor)
+                .animation(AppMotion.theme, value: customThemeHex)
         }
         .defaultSize(width: 1_100, height: 720)
         .commands {

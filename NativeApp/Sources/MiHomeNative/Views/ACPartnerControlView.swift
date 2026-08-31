@@ -26,6 +26,7 @@ struct ACPartnerControlView: View {
             sceneControls
             advancedControls
         }
+        .animation(AppMotion.state, value: isPowerOn)
     }
 
     private var temperatureHero: some View {

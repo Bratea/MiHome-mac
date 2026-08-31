@@ -9,14 +9,17 @@ struct AppCardSurface: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if liquidGlassEnabled, #available(macOS 26.0, *) {
-            content
-                .background(AppThemeColor.card(for: colorScheme).opacity(0.16), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
-        } else {
-            content
-                .background(AppThemeColor.card(for: colorScheme), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        Group {
+            if liquidGlassEnabled, #available(macOS 26.0, *) {
+                content
+                    .background(AppThemeColor.card(for: colorScheme).opacity(0.16), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: cornerRadius))
+            } else {
+                content
+                    .background(AppThemeColor.card(for: colorScheme), in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            }
         }
+        .animation(AppMotion.theme, value: liquidGlassEnabled)
     }
 }
 

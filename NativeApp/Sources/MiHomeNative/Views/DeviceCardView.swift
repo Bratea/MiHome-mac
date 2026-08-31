@@ -6,6 +6,7 @@ struct DeviceCardView: View {
     let metric: String?
     let onTogglePower: (() -> Void)?
     let isPowerPending: Bool
+    let isSelected: Bool
     @State private var isHovered = false
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
     @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
@@ -97,10 +98,12 @@ struct DeviceCardView: View {
                     lineWidth: isHovered ? 1 : 0.5
                 )
         }
-        .shadow(color: isHovered ? Color.black.opacity(0.12) : .clear, radius: 12, y: 5)
-        .scaleEffect(isHovered ? 1.01 : 1)
+        .shadow(color: isHovered || isSelected ? Color.black.opacity(0.12) : .clear, radius: 12, y: 5)
+        .scaleEffect(isHovered || isSelected ? 1.01 : 1)
         .opacity(device.online ? 1 : 0.58)
         .animation(.easeOut(duration: 0.16), value: isHovered)
+        .animation(AppMotion.state, value: powerState)
+        .animation(AppMotion.panel, value: isSelected)
         .onHover { isHovered = $0 }
         .accessibilityElement(children: .combine)
     }
