@@ -59,26 +59,25 @@ struct DeviceCardView: View {
                     .lineLimit(1)
             }
 
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(device.online ? Color.green : Color.secondary.opacity(0.55))
-                    .frame(width: 6, height: 6)
-                Text(device.online ? "在线" : "离线")
-                    .font(.caption)
-                    .foregroundStyle(device.online ? .primary : .secondary)
+            HStack(alignment: .center, spacing: 8) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(device.online ? Color.green : Color.secondary.opacity(0.55))
+                        .frame(width: 6, height: 6)
+                    Text(device.online ? "在线" : "离线")
+                        .font(.caption)
+                        .foregroundStyle(device.online ? .primary : .secondary)
+                }
+
+                Spacer(minLength: 8)
+
                 if let powerState, device.online {
-                    Text(powerState ? "已开启" : "已关闭")
-                        .font(.caption2.weight(.semibold))
-                        .foregroundStyle(powerState ? Color.green : Color.red)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background((powerState ? Color.green : Color.red).opacity(0.13), in: Capsule())
+                    powerStatusBadge(isOn: powerState)
                 } else if let metric {
                     Text(metric)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                Spacer()
             }
             .padding(.top, 13)
         }
@@ -110,5 +109,19 @@ struct DeviceCardView: View {
 
     private var powerTint: Color {
         powerState == true ? .green : .red
+    }
+
+    private func powerStatusBadge(isOn: Bool) -> some View {
+        Label(isOn ? "已开启" : "已关闭", systemImage: "power")
+            .font(.caption2.weight(.semibold))
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(isOn ? Color.green : Color.red)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background((isOn ? Color.green : Color.red).opacity(0.11), in: Capsule())
+            .overlay {
+                Capsule()
+                    .strokeBorder((isOn ? Color.green : Color.red).opacity(0.16), lineWidth: 0.5)
+            }
     }
 }

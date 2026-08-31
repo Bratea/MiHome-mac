@@ -77,13 +77,15 @@ struct DeviceDetailView: View {
                     .foregroundStyle(.secondary)
                 HStack(spacing: 5) {
                     Label(device.online ? "在线" : "离线", systemImage: "circle.fill")
+                        .foregroundStyle(device.online ? Color.green : Color.secondary)
                     if device.online, let powerState {
                         Text("·")
+                            .foregroundStyle(.tertiary)
                         Text(powerState ? "已开启" : "已关闭")
+                            .foregroundStyle(powerState ? Color.green : Color.red)
                     }
                 }
                 .font(.caption.weight(.medium))
-                .foregroundStyle(statusTint)
             }
             Spacer()
             VStack(spacing: 6) {
@@ -120,10 +122,5 @@ struct DeviceDetailView: View {
         } else {
             GenericDeviceControlView(device: device, detail: detail, store: store)
         }
-    }
-
-    private var statusTint: Color {
-        guard device.online else { return .secondary }
-        return powerState == false ? .red : .green
     }
 }
