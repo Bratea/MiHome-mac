@@ -7,6 +7,7 @@ struct ContentView: View {
     @State private var selectedHome = "全部家庭"
     @State private var selectedRoom = "全部房间"
     @State private var selectedDevice: Device?
+    @State private var showingActivityLog = false
 
     private var rooms: [String] { store.rooms(for: selectedHome) }
     private var filteredDevices: [Device] {
@@ -35,15 +36,33 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
                     Divider()
-                    SettingsLink {
-                        Label("设置", systemImage: "gearshape")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 9)
-                            .contentShape(Rectangle())
+                    HStack(spacing: 8) {
+                        SettingsLink {
+                            Label("设置", systemImage: "gearshape")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 9)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity)
+                        .background(.quaternary, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+                        Button {
+                            showingActivityLog.toggle()
+                        } label: {
+                            Label("日志", systemImage: "list.bullet.rectangle")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding(.vertical, 9)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .frame(maxWidth: .infinity)
+                        .background(.quaternary, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+                        .popover(isPresented: $showingActivityLog, arrowEdge: .bottom) {
+                            ActivityLogView(store: store)
+                                .frame(width: 360, height: 440)
+                        }
                     }
-                    .buttonStyle(.plain)
-                    .background(.quaternary, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
                 }
                 .font(.caption)
                 .frame(maxWidth: .infinity, alignment: .leading)
