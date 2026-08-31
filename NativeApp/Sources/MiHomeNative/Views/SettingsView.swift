@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    let store: DeviceStore
     @AppStorage("showOfflineDevices") private var showOfflineDevices = true
     @AppStorage("automaticRefresh") private var automaticRefresh = true
     @AppStorage("appearanceMode") private var appearanceMode = AppAppearance.system.rawValue
@@ -9,6 +10,7 @@ struct SettingsView: View {
     @AppStorage("liquidGlassEnabled") private var liquidGlassEnabled = false
     @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
     @Environment(\.colorScheme) private var colorScheme
+    @State private var showingQRCodeLogin = false
 
     private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
     private var customColor: Binding<Color> {
@@ -112,6 +114,35 @@ struct SettingsView: View {
                 )
             }
 
+            SettingsCard("米家账户") {
+                HStack(spacing: 12) {
+                    Image(systemName: store.accountAvailable ? "checkmark.icloud.fill" : "icloud")
+                        .font(.title3)
+                        .foregroundStyle(store.accountAvailable ? .green : .secondary)
+                        .frame(width: 30)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(store.accountAvailable ? "账户已连接" : "尚未连接米家账户")
+                            .font(.body.weight(.medium))
+                        Text(store.accountAvailable ? "可同步云端设备、在线状态与基础数据" : "通过手机米家 App 扫码登录")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 12)
+                    VStack(alignment: .trailing, spacing: 8) {
+                        Button("扫码登录") { showingQRCodeLogin = true }
+                            .buttonStyle(.bordered)
+                        Button {
+                            Task { await store.syncFromCloud() }
+                        } label: {
+                            if store.isSyncing { ProgressView().controlSize(.small) }
+                            else { Text("同步设备") }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!store.accountAvailable || store.isSyncing)
+                    }
+                }
+            }
+
             SettingsCard("同步") {
                 SettingsToggleRow(
                     title: "启动时读取本地缓存",
@@ -154,6 +185,10 @@ struct SettingsView: View {
             if backgroundOpacity < 0.62 {
                 backgroundOpacity = 0.82
             }
+        }
+        .task { await store.refreshAccountStatus() }
+        .sheet(isPresented: $showingQRCodeLogin) {
+            QRCodeLoginSheet(store: store)
         }
     }
 }

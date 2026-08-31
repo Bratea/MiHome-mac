@@ -40,6 +40,22 @@ struct DeviceCache: Codable, Sendable {
     }
 }
 
+struct QRLoginSession: Codable, Sendable {
+    let requiresScan: Bool
+    let loginURL: String?
+    let payload: String?
+
+    enum CodingKeys: String, CodingKey {
+        case requiresScan = "requires_scan"
+        case loginURL = "login_url"
+        case payload
+    }
+}
+
+struct LoginStatus: Codable, Sendable {
+    let available: Bool
+}
+
 struct DeviceControlDetail: Codable, Sendable {
     let did: String
     let name: String

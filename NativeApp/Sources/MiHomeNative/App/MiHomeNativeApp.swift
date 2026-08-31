@@ -27,6 +27,11 @@ struct MiHomeNativeApp: App {
         .defaultSize(width: 1_100, height: 720)
         .commands {
             CommandGroup(after: .appInfo) {
+                Button("同步米家设备") {
+                    Task { await store.syncFromCloud() }
+                }
+                .keyboardShortcut("r", modifiers: [.command, .shift])
+                .disabled(store.isSyncing)
                 Button("重新载入设备缓存") { store.loadCache() }
                     .keyboardShortcut("r", modifiers: [.command])
             }
@@ -44,7 +49,7 @@ struct MiHomeNativeApp: App {
         .menuBarExtraStyle(.menu)
 
         Settings {
-            SettingsView()
+            SettingsView(store: store)
                 .preferredColorScheme(preferredScheme)
                 .tint(tint)
         }

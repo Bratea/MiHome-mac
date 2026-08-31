@@ -19,6 +19,10 @@ final class DeviceStore {
     private(set) var energyStatistics: [String: (daily: EnergyStatistics, monthly: EnergyStatistics)] = [:]
     private(set) var smartScenes: [SmartScene] = []
     private(set) var isLoadingExtras: Set<String> = []
+    private(set) var isSyncing = false
+    private(set) var isAuthenticating = false
+    private(set) var accountAvailable = false
+    private(set) var qrLoginURL: String?
 
     var onlineCount: Int { devices.filter(\.online).count }
     var homes: [String] {
@@ -78,6 +82,54 @@ final class DeviceStore {
     func dismissNotification(id: UUID) {
         guard notification?.id == id else { return }
         notification = nil
+    }
+
+    func refreshAccountStatus() async {
+        do {
+            accountAvailable = try await Task.detached { try MijiaBridge.loginStatus().available }.value
+        } catch {
+            accountAvailable = false
+        }
+    }
+
+    func syncFromCloud() async {
+        guard !isSyncing else { return }
+        isSyncing = true
+        defer { isSyncing = false }
+        do {
+            let cache = try await Task.detached { try MijiaBridge.syncDevices() }.value
+            try DeviceCacheService.save(cache)
+            apply(cache)
+            accountAvailable = true
+            reportSuccess(title: "设备已同步", message: "已更新 \(cache.devices.count) 台设备与在线状态")
+        } catch {
+            reportFailure(title: "同步设备失败", message: error.localizedDescription)
+        }
+    }
+
+    func startQRCodeLogin() async {
+        guard !isAuthenticating else { return }
+        isAuthenticating = true
+        qrLoginURL = nil
+        defer { isAuthenticating = false }
+        do {
+            let session = try await Task.detached { try MijiaBridge.beginQRCodeLogin() }.value
+            guard session.requiresScan, let loginURL = session.loginURL, let payload = session.payload else {
+                accountAvailable = true
+                reportSuccess(title: "米家账户已连接", message: "本地凭据仍然有效")
+                return
+            }
+            qrLoginURL = loginURL
+            try await Task.detached { try MijiaBridge.completeQRCodeLogin(payload: payload) }.value
+            accountAvailable = true
+            reportSuccess(title: "扫码登录成功", message: "账户凭据已安全保存在本机")
+        } catch {
+            reportFailure(title: "扫码登录失败", message: error.localizedDescription)
+        }
+    }
+
+    func clearQRCodeLogin() {
+        qrLoginURL = nil
     }
 
     func loadControls(for device: Device) async {
@@ -175,6 +227,17 @@ final class DeviceStore {
 
     private func deviceName(for did: String) -> String {
         devices.first(where: { $0.did == did })?.name ?? "设备"
+    }
+
+    private func apply(_ cache: DeviceCache) {
+        devices = cache.devices.sorted { lhs, rhs in
+            if lhs.online != rhs.online { return lhs.online && !rhs.online }
+            return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+        }
+        powerStates = cache.knownPower
+        metrics = cache.metrics
+        lastLoadedAt = .now
+        lastError = nil
     }
 
     private func reportSuccess(title: String, message: String) {

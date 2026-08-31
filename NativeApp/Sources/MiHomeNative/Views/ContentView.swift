@@ -236,6 +236,21 @@ struct ContentView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .primaryAction) {
             Button {
+                Task { await store.syncFromCloud() }
+            } label: {
+                if store.isSyncing {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Label("同步米家设备", systemImage: "arrow.triangle.2.circlepath")
+                }
+            }
+            .disabled(store.isSyncing)
+            .help("同步米家云端设备")
+        }
+
+        ToolbarItem(placement: .primaryAction) {
+            Button {
                 store.loadCache()
             } label: {
                 Label("重新载入缓存", systemImage: "arrow.clockwise")

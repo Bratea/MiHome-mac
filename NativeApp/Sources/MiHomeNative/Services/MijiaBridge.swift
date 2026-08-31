@@ -56,6 +56,22 @@ enum MijiaBridge {
         _ = try run("run-scene", "--scene-id", id, "--home-id", homeID)
     }
 
+    static func loginStatus() throws -> LoginStatus {
+        try decode(run("login-status"))
+    }
+
+    static func beginQRCodeLogin() throws -> QRLoginSession {
+        try decode(run("qr-login-begin"))
+    }
+
+    static func completeQRCodeLogin(payload: String) throws {
+        _ = try run("qr-login-wait", "--payload", payload)
+    }
+
+    static func syncDevices() throws -> DeviceCache {
+        try decode(run("sync-devices"))
+    }
+
     private static func run(_ arguments: String...) throws -> Data {
         guard let command = bridgeCommand() else { throw MijiaBridgeError.unavailable }
         let process = Process()

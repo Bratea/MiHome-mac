@@ -55,9 +55,36 @@ def main() -> None:
     scene.add_argument("--scene-id", required=True)
     scene.add_argument("--home-id", required=True)
 
+    subcommands.add_parser("login-status")
+    subcommands.add_parser("qr-login-begin")
+    qr_wait = subcommands.add_parser("qr-login-wait")
+    qr_wait.add_argument("--payload", required=True)
+    subcommands.add_parser("sync-devices")
+
     args = parser.parse_args()
     service = MijiaService()
-    if args.command == "detail":
+    if args.command == "login-status":
+        result = {"available": service.login_status()}
+    elif args.command == "qr-login-begin":
+        login_data = service.qr_login_begin()
+        result = {
+            "requires_scan": login_data is not None,
+            "login_url": login_data.get("loginUrl") if login_data else None,
+            "payload": json.dumps(login_data, ensure_ascii=False) if login_data else None,
+        }
+    elif args.command == "qr-login-wait":
+        service.qr_login_wait(_json_argument(args.payload))
+        result = {"ok": True}
+    elif args.command == "sync-devices":
+        devices = service.list_devices()
+        dids = [device.did for device in devices]
+        result = {
+            "version": 1,
+            "devices": [asdict(device) for device in devices],
+            "known_power": service.power_states(dids),
+            "metrics": {key: value for key, value in service.read_metrics(dids).items() if value},
+        }
+    elif args.command == "detail":
         result = asdict(service.device_detail(args.did))
     elif args.command == "read-props":
         result = service.read_props(args.did, _json_argument(args.names))
