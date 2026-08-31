@@ -7,7 +7,7 @@ struct SettingsView: View {
     @AppStorage("themeColor") private var themeColor = AppThemeColor.blue.rawValue
     @AppStorage("customThemeHex") private var customThemeHex = "#387AE6"
     @AppStorage("liquidGlassEnabled") private var liquidGlassEnabled = false
-    @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.72
+    @AppStorage("backgroundOpacity") private var backgroundOpacity = 0.82
     @Environment(\.colorScheme) private var colorScheme
 
     private var tint: Color { AppThemeColor.color(for: themeColor, customHex: customThemeHex) }
@@ -93,7 +93,7 @@ struct SettingsView: View {
                         }
                         Slider(value: $backgroundOpacity, in: 0.25...0.90, step: 0.01)
                             .tint(tint)
-                        Text("降低数值可显示更多系统材质层次。")
+                        Text("不叠加灰色或主题色，直接透出系统模糊背景。")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
