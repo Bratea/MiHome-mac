@@ -92,9 +92,9 @@ struct SettingsView: View {
                                     .foregroundStyle(.secondary)
                                     .monospacedDigit()
                             }
-                            Slider(value: $backgroundOpacity, in: 0.25...0.90, step: 0.01)
+                            Slider(value: $backgroundOpacity, in: 0.62...0.90, step: 0.01)
                                 .tint(tint)
-                            Text("不叠加灰色或主题色，直接透出系统模糊背景。")
+                            Text("使用系统 backdrop blur，底下应用的文字会被模糊处理。")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -141,6 +141,11 @@ struct SettingsView: View {
         .frame(width: 570, height: 610, alignment: .topLeading)
         .background(AppCanvasBackground())
         .background(WindowTransparencyConfigurator(enabled: liquidGlassEnabled).allowsHitTesting(false))
+        .onAppear {
+            if backgroundOpacity < 0.62 {
+                backgroundOpacity = 0.82
+            }
+        }
     }
 }
 

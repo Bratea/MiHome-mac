@@ -7,12 +7,17 @@ struct AppCanvasBackground: View {
     @AppStorage("liquidGlassEnabled") private var liquidGlassEnabled = false
     @Environment(\.colorScheme) private var colorScheme
 
+    private var glassOpacity: CGFloat {
+        // A fully transparent backing exposes sharp text from other apps. Keep
+        // a minimum visual-effect layer so glass always remains genuinely blurred.
+        CGFloat(min(max(backgroundOpacity, 0.62), 0.92))
+    }
+
     @ViewBuilder
     var body: some View {
         if liquidGlassEnabled {
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .opacity(backgroundOpacity)
+            WindowBackdropBlur(opacity: glassOpacity)
+                .overlay(.white.opacity(0.025))
                 .ignoresSafeArea()
         } else {
             AppThemeColor.canvas(for: colorScheme)
